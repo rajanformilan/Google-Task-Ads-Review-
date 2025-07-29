@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Hotel Reviews - Earn Money</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+  <div class="navbar">
+    <div class="logo">🏨 Review4Pay</div>
+    <div class="nav-user">
+      <span id="username-display">Welcome, <span id="username">User</span></span>
+      <span id="earnings">💰 Rs. <span id="balance">0</span></span>
+      <button onclick="logout()">Logout</button>
+    </div>
+  </div>
+
+  <div class="main-content">
+    <h2>Top Hotels to Review</h2>
+    <div id="hotels-container" class="hotel-grid"></div>
+  </div>
+
+  <!-- Review Modal -->
+  <div id="review-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h2>Write a Review for <span id="hotel-name"></span></h2>
+      <input type="text" id="reviewer-name" placeholder="Your Name">
+      <select id="review-stars">
+        <option value="5">⭐⭐⭐⭐⭐</option>
+        <option value="4">⭐⭐⭐⭐</option>
+        <option value="3">⭐⭐⭐</option>
+        <option value="2">⭐⭐</option>
+        <option value="1">⭐</option>
+      </select>
+      <textarea id="review-text" placeholder="Write your review here..."></textarea>
+      <button id="submit-review">Submit & Earn Rs.65</button>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
