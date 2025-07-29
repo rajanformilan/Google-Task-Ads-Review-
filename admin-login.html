@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Login</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; max-width: 400px; margin: auto; padding: 20px; }
+    input { width: 100%; padding: 10px; margin: 10px 0; }
+    button { padding: 10px; width: 100%; background: #007bff; color: white; border: none; }
+    .msg { text-align: center; margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <h2>Admin Login</h2>
+  <input type="text" id="username" placeholder="Username" required>
+  <input type="password" id="password" placeholder="Password" required>
+  <button onclick="login()">Login</button>
+  <div class="msg" id="msg"></div>
+
+  <script>
+    function login() {
+      const user = document.getElementById("username").value;
+      const pass = document.getElementById("password").value;
+      const msg = document.getElementById("msg");
+
+      if (user === "rajan699" && pass === "Re@dB00ks") {
+        localStorage.setItem("isAdmin", "true");
+        window.location.href = "admin-panel.html";
+      } else {
+        msg.textContent = "Invalid credentials";
+      }
+    }
+  </script>
+</body>
+</html>

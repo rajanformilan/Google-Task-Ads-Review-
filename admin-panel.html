@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Panel</title>
+  <meta charset="UTF-8">
+  <style>
+    body { font-family: Arial; max-width: 700px; margin: auto; padding: 20px; }
+    .order { border-bottom: 1px solid #ccc; padding: 10px 0; }
+    .logout { margin-top: 20px; background: red; color: white; padding: 10px; border: none; }
+  </style>
+</head>
+<body>
+  <h2>Submitted Orders</h2>
+  <div id="orderList"></div>
+  <button class="logout" onclick="logout()">Logout</button>
+
+  <script>
+    if (localStorage.getItem("isAdmin") !== "true") {
+      window.location.href = "admin-login.html";
+    }
+
+    const orderList = document.getElementById("orderList");
+    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+
+    if (orders.length === 0) {
+      orderList.innerHTML = "<p>No orders found.</p>";
+    } else {
+      orders.forEach(order => {
+        orderList.innerHTML += `
+          <div class="order">
+            <strong>${order.name}</strong> (${order.email})<br>
+            <em>${order.time}</em><br>
+            ${order.message}
+          </div>
+        `;
+      });
+    }
+
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = "admin-login.html";
+    }
+  </script>
+</body>
+</html>

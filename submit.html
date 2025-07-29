@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Submit Request</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 360px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f8f8f8;
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    select, input, button {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      font-size: 16px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+    button {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .msg {
+      text-align: center;
+      margin-top: 15px;
+      font-weight: bold;
+    }
+    .balance {
+      text-align: center;
+      font-weight: bold;
+      color: #333;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Submit Request</h2>
+
+  <div class="balance">Your Balance: Rs <span id="balance">0</span></div>
+
+  <select id="type">
+    <option value="Recharge">🔋 Recharge</option>
+    <option value="Withdraw">💸 Withdraw</option>
+  </select>
+
+  <input type="number" id="amount" placeholder="Enter Amount (Rs)" />
+
+  <input type="tel" id="number" placeholder="Enter Your Number" maxlength="15" />
+
+  <button onclick="submitRequest()">Submit</button>
+
+  <div class="msg" id="msg"></div>
+
+  <script>
+    // Initialize balance if not present
+    if (localStorage.getItem("balance") === null) {
+      localStorage.setItem("balance", "0");
+    }
+
+    function updateBalanceUI() {
+      const bal = parseFloat(localStorage.getItem("balance") || "0");
+      document.getElementById("balance").textContent = bal.toFixed(2);
+    }
+
+    function submitRequest() {
+      const type = document.getElementById("type").value;
+      const amount = parseFloat(document.getElementById("amount").value);
+      const number = document.getElementById("number").value.trim();
+      const msg = document.getElementById("msg");
+      let balance = parseFloat(localStorage.getItem("balance") || "0");
+
+      if (!amount || amount <= 0) {
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Enter a valid amount.";
+        return;
+      }
+
+      if (!number || number.length < 8) {
+        msg.style.color = "red";
+        msg.textContent = "⚠️ Enter a valid number.";
+        return;
+      }
+
+      if (type === "Withdraw" && amount > balance) {
+        msg.style.color = "red";
+        msg.textContent = `❌ Insufficient balance. You have only Rs ${balance.toFixed(2)}.`;
+        return;
+      }
+
+      // Process balance update
+      if (type === "Recharge") {
+        balance += amount;
+      } else if (type === "Withdraw") {
+        balance -= amount;
+      }
+
+      localStorage.setItem("balance", balance.toString());
+
+      // Save request
+      const request = {
+        type,
+        amount,
+        number,
+        date: new Date().toLocaleString()
+      };
+
+      const requests = JSON.parse(localStorage.getItem("requests") || "[]");
+      requests.push(request);
+      localStorage.setItem("requests", JSON.stringify(requests));
+
+      msg.style.color = "green";
+      msg.textContent = `✅ ${type} request of Rs ${amount} submitted!`;
+
+      document.getElementById("amount").value = "";
+      document.getElementById("number").value = "";
+
+      updateBalanceUI();
+    }
+
+    // Load balance on page load
+    updateBalanceUI();
+  </script>
+
+</body>
+</html>
