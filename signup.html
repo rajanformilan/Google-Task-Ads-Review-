@@ -1,28 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Sign Up</title>
-  <link rel="stylesheet" href="auth.css"/>
+  <link rel="stylesheet" href="auth.css" />
+  <style>
+    .password-container {
+      position: relative;
+      margin-bottom: 15px;
+    }
+    .toggle-password {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      cursor: pointer;
+      font-size: 0.9rem;
+      user-select: none;
+      color: #007bff;
+    }
+    #strength-msg {
+      font-weight: bold;
+      margin-top: -10px;
+      margin-bottom: 10px;
+    }
+    #strength-msg.weak { color: red; }
+    #strength-msg.medium { color: orange; }
+    #strength-msg.strong { color: green; }
+  </style>
 </head>
 <body>
   <div class="login-container">
     <h2>Sign Up</h2>
 
-    <input type="text" id="phone" placeholder="Mobile Number (+977...)" />
-    <input type="password" id="password" placeholder="Create Password" />
+    <input type="text" id="name" placeholder="Full Name" />
+
+    <input type="text" id="phone" placeholder="Mobile Number (+977XXXXXXXXXX)" />
+
+    <div class="password-container">
+      <input type="password" id="password" placeholder="Create Password" />
+      <span class="toggle-password" onclick="togglePassword('password')">Show</span>
+    </div>
+    <div id="strength-msg"></div>
+
+    <div class="password-container">
+      <input type="password" id="confirm-password" placeholder="Confirm Password" />
+      <span class="toggle-password" onclick="togglePassword('confirm-password')">Show</span>
+    </div>
+
     <button onclick="signUp()">Sign Up</button>
-    <p>Already have an account? <a href="login.html">Login</a></p>
+    <p>Already have an account? <a href="index.html">Login</a></p>
   </div>
 
   <script>
+    const passwordInput = document.getElementById('password');
+    const strengthMsg = document.getElementById('strength-msg');
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      strengthMsg.textContent = '';
+      strengthMsg.className = '';
+
+      if (val.length === 0) {
+        return; // no message
+      } else if (val.length < 6) {
+        strengthMsg.textContent = 'Weak password';
+        strengthMsg.classList.add('weak');
+      } else if (val.match(/^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{6,}$/)) {
+        strengthMsg.textContent = 'Medium strength';
+        strengthMsg.classList.add('medium');
+      } 
+      if (val.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[\W_]).{8,}$/)) {
+        strengthMsg.textContent = 'Strong password';
+        strengthMsg.classList.add('strong');
+      }
+    });
+
+    function togglePassword(fieldId) {
+      const input = document.getElementById(fieldId);
+      const toggle = input.nextElementSibling;
+      if (input.type === 'password') {
+        input.type = 'text';
+        toggle.textContent = 'Hide';
+      } else {
+        input.type = 'password';
+        toggle.textContent = 'Show';
+      }
+    }
+
     function signUp() {
+      const name = document.getElementById('name').value.trim();
       const phone = document.getElementById('phone').value.trim();
       const password = document.getElementById('password').value.trim();
+      const confirmPassword = document.getElementById('confirm-password').value.trim();
 
-      if (!phone || phone.length < 10 || !password) {
-        alert("Please enter a valid mobile number and password.");
+      const phoneRegex = /^\+977\d{8,10}$/;
+
+      if (!name) {
+        alert("Please enter your full name.");
+        return;
+      }
+
+      if (!phoneRegex.test(phone)) {
+        alert("Please enter a valid Nepali mobile number starting with +977.");
+        return;
+      }
+
+      if (!password) {
+        alert("Please enter a password.");
+        return;
+      }
+
+      if (password !== confirmPassword) {
+        alert("Passwords do not match.");
+        return;
+      }
+
+      if (password.length < 6) {
+        alert("Password should be at least 6 characters long.");
         return;
       }
 
@@ -33,7 +129,7 @@
         return;
       }
 
-      users[phone] = { password };
+      users[phone] = { name, password };
       localStorage.setItem("users", JSON.stringify(users));
       localStorage.setItem("loggedInUser", phone);
 
