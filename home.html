@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Review4Pay - Hotel Reviews</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    .hotel-card {
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      padding: 10px;
+      margin: 10px;
+      display: inline-block;
+      vertical-align: top;
+      width: 300px;
+      box-shadow: 0 0 8px rgba(0,0,0,0.1);
+    }
+    .hotel-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    #review-modal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.7);
+      display: none;
+      justify-content: center;
+      align-items: center;
+    }
+    #review-modal .modal-content {
+      background: #fff;
+      padding: 20px;
+      width: 90%;
+      max-width: 400px;
+      border-radius: 10px;
+    }
+    #balance {
+      font-weight: bold;
+      color: green;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Review & Earn Rs.65 Per Hotel</h1>
+  <p>Today's Balance: Rs. <span id="balance">0</span></p>
+
+  <div id="hotels-container"></div>
+
+  <!-- Modal -->
+  <div id="review-modal">
+    <div class="modal-content">
+      <h2>Review: <span id="hotel-name"></span></h2>
+      <input id="reviewer-name" type="text" placeholder="Your Name" style="width:100%;margin:8px 0;" />
+      <textarea id="review-text" placeholder="Your review..." style="width:100%;height:80px;"></textarea>
+      <br>
+      <button id="submit-review">Submit Review</button>
+      <button onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+
+  <script>
+    const hotelsContainer = document.getElementById("hotels-container");
+    const hotelNameSpan = document.getElementById("hotel-name");
+    const modal = document.getElementById("review-modal");
+    const submitButton = document.getElementById("submit-review");
+    const balanceSpan = document.getElementById("balance");
+    let selectedHotel = "";
+    let balance = parseInt(localStorage.getItem("balance")) || 0;
+    balanceSpan.textContent = balance;
+
+    // ✅ List of real Nepal hotels with valid images
+    const hotels = [
+      { name: "Hotel Yak & Yeti, Kathmandu", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/0e/57/8a/95/hotel-yak-yeti.jpg" },
+      { name: "Temple Tree Resort, Pokhara", image: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/460842739.jpg" },
+      { name: "Barahi Jungle Lodge, Chitwan", image: "https://barahijunglelodge.com/uploads/1/3/2/5/132578440/barahi-jungle-lodge-1_orig.jpg" },
+      { name: "Hotel Annapurna, Kathmandu", image: "https://media-cdn.tripadvisor.com/media/photo-s/09/8e/99/d2/hotel-annapurna.jpg" },
+      { name: "Mystic Mountain, Nagarkot", image: "https://q-xx.bstatic.com/xdata/images/hotel/max1024x768/142265212.jpg" },
+      { name: "Atithi Resort, Pokhara", image: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/191670393.jpg" },
+      { name: "Hotel Mount Kailash, Janakpur", image: "https://www.mountkailashresort.com/images/gallery/1.jpg" },
+      { name: "Siddhartha Grand City, Butwal", image: "https://siddharthahospitality.com/wp-content/uploads/2020/07/siddhartha-grand-city.jpg" },
+      { name: "Pawan Palace, Lumbini", image: "https://dynamic-media-cdn.tripadvisor.com/media/photo-o/1c/c5/61/ea/pawan-palace.jpg" },
+      { name: "Central Plaza, Nepalgunj", image: "https://cf.bstatic.com/xdata/images/hotel/max1024x768/138243962.jpg" },
+    ];
+
+    // ✅ Load only 30/day
+    const today = new Date().toISOString().split("T")[0];
+    const savedDate = localStorage.getItem("hotelDate");
+    if (savedDate !== today) {
+      const shuffled = hotels.sort(() => 0.5 - Math.random());
+      localStorage.setItem("dailyHotels", JSON.stringify(shuffled.slice(0, 30)));
+      localStorage.setItem("hotelDate", today);
+    }
+    const todayHotels = JSON.parse(localStorage.getItem("dailyHotels")) || [];
+
+    // ✅ Render hotels
+    todayHotels.forEach(hotel => {
+      const card = document.createElement("div");
+      card.className = "hotel-card";
+      card.innerHTML = `
+        <img src="${hotel.image}" alt="${hotel.name}" loading="lazy"/>
+        <h3>${hotel.name}</h3>
+        <button onclick="openModal('${hotel.name}')">Review & Earn</button>
+      `;
+      hotelsContainer.appendChild(card);
+    });
+
+    // ✅ Modal functions
+    function openModal(hotelName) {
+      selectedHotel = hotelName;
+      hotelNameSpan.textContent = hotelName;
+      modal.style.display = "flex";
+    }
+
+    function closeModal() {
+      modal.style.display = "none";
+    }
+
+    // ✅ Submit review
+    submitButton.onclick = function () {
+      const name = document.getElementById("reviewer-name").value.trim();
+      const review = document.getElementById("review-text").value.trim();
+
+      if (name && review) {
+        balance += 65;
+        localStorage.setItem("balance", balance);
+        balanceSpan.textContent = balance;
+        alert(`Thank you, ${name}! You earned Rs.65 for reviewing ${selectedHotel}.`);
+        closeModal();
+        document.getElementById("reviewer-name").value = "";
+        document.getElementById("review-text").value = "";
+      } else {
+        alert("Please fill in your name and review.");
+      }
+    };
+  </script>
+</body>
+</html>
