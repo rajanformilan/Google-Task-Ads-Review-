@@ -119,6 +119,74 @@
       text-align: center;
       margin: 10px;
     }
+    
+    
+    
+    body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
+
+.navbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background-color: #333;
+  padding: 10px 20px;
+  color: white;
+}
+
+.logo {
+  font-size: 24px;
+}
+
+.nav-links {
+  list-style: none;
+  display: flex;
+  gap: 20px;
+}
+
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+}
+
+.burger {
+  display: none;
+  flex-direction: column;
+  cursor: pointer;
+  gap: 5px;
+}
+
+.burger .line {
+  width: 25px;
+  height: 3px;
+  background-color: white;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    background-color: #444;
+    position: absolute;
+    top: 60px;
+    right: 20px;
+    width: 150px;
+    padding: 10px;
+    border-radius: 5px;
+  }
+
+  .nav-links.active {
+    display: flex;
+  }
+
+  .burger {
+    display: flex;
+  }
+}
+
   </style>
 </head>
 <body>
@@ -127,9 +195,18 @@
     <div class="logo">🏨 Review4Pay</div>
     <div class="nav-user">
       <span id="username-display">Welcome, <span id="username">User</span></span>
-      <span id="earnings">💰 Rs. <span id="balance">0</span></span>
-      <a href="submit.html"><button>Submit</button></a>
-      <button onclick="logout()">Logout</button>
+      <span id="earnings">💰 Rs.<span id="balance">0</span></span>
+      <div class="burger" id="burger">
+      <div class="line"></div>
+      <div class="line"></div>
+      <div class="line"></div>
+    </div>
+    <ul class="nav-links" id="nav-links">
+      <li><a href="home.html">Home</a></li>
+      <li><a href="submit.html">Submit</a></li>
+      <li><a href="admin-login.html">Admin</a></li>
+      <li><a href="login.html">Logout</a></li>
+    </ul>
     </div>
   </div>
 
@@ -247,6 +324,19 @@
       localStorage.removeItem("loggedInUser");
       window.location.href = "login.html";
     }
+    
+    
+    
+    
+    
+    
+    const burger = document.getElementById('burger');
+const navLinks = document.getElementById('nav-links');
+
+burger.addEventListener('click', () => {
+  navLinks.classList.toggle('active');
+});
+
   </script>
 </body>
 </html>
