@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hotel Reviews - Earn Money</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -120,73 +120,52 @@
       margin: 10px;
     }
     
-    
-    
-    body {
-  margin: 0;
-  font-family: Arial, sans-serif;
-}
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 20px;
+    }
 
-.navbar {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: #333;
-  padding: 10px 20px;
-  color: white;
-}
+    .nav-links li a {
+      color: white;
+      text-decoration: none;
+    }
 
-.logo {
-  font-size: 24px;
-}
+    .burger {
+      display: none;
+      flex-direction: column;
+      cursor: pointer;
+      gap: 5px;
+    }
 
-.nav-links {
-  list-style: none;
-  display: flex;
-  gap: 20px;
-}
+    .burger .line {
+      width: 25px;
+      height: 3px;
+      background-color: white;
+    }
 
-.nav-links li a {
-  color: white;
-  text-decoration: none;
-}
+    /* Responsive */
+    @media (max-width: 768px) {
+      .nav-links {
+        display: none;
+        flex-direction: column;
+        background-color: #444;
+        position: absolute;
+        top: 60px;
+        right: 20px;
+        width: 150px;
+        padding: 10px;
+        border-radius: 5px;
+      }
 
-.burger {
-  display: none;
-  flex-direction: column;
-  cursor: pointer;
-  gap: 5px;
-}
+      .nav-links.active {
+        display: flex;
+      }
 
-.burger .line {
-  width: 25px;
-  height: 3px;
-  background-color: white;
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-  .nav-links {
-    display: none;
-    flex-direction: column;
-    background-color: #444;
-    position: absolute;
-    top: 60px;
-    right: 20px;
-    width: 150px;
-    padding: 10px;
-    border-radius: 5px;
-  }
-
-  .nav-links.active {
-    display: flex;
-  }
-
-  .burger {
-    display: flex;
-  }
-}
-
+      .burger {
+        display: flex;
+      }
+    }
   </style>
 </head>
 <body>
@@ -197,16 +176,16 @@
       <span id="username-display">Welcome, <span id="username">User</span></span>
       <span id="earnings">💰 Rs.<span id="balance">0</span></span>
       <div class="burger" id="burger">
-      <div class="line"></div>
-      <div class="line"></div>
-      <div class="line"></div>
-    </div>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="home.html">Home</a></li>
-      <li><a href="submit.html">Submit</a></li>
-      <li><a href="admin-login.html">Admin</a></li>
-      <li><a href="login.html">Logout</a></li>
-    </ul>
+        <div class="line"></div>
+        <div class="line"></div>
+        <div class="line"></div>
+      </div>
+      <ul class="nav-links" id="nav-links">
+        <li><a href="home.html">Home</a></li>
+        <li><a href="submit.html">Submit</a></li>
+        <li><a href="admin-login.html">Admin</a></li>
+        <li><a href="login.html">Logout</a></li>
+      </ul>
     </div>
   </div>
 
@@ -246,7 +225,13 @@
 
     let selectedHotel = "";
     let balance = parseInt(localStorage.getItem("balance")) || 0;
-    balanceSpan.forEach(el => el.textContent = balance);
+
+    // Track how many reviews done today
+    let reviewsToday = parseInt(localStorage.getItem("reviewsToday")) || 0;
+    const maxReviewsPerDay = 30;
+
+    // Track which hotels reviewed today (to prevent multiple reviews)
+    let reviewedHotels = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
 
     // Retrieve logged-in user phone and info
     const loggedInPhone = localStorage.getItem("loggedInUser");
@@ -263,6 +248,12 @@
     // Auto-fill reviewer name and disable input
     reviewerNameInput.value = loggedInName;
     reviewerNameInput.disabled = true;  // comment this out if you want user editable
+
+    // Update all balance displays
+    function updateBalanceDisplay() {
+      balanceSpan.forEach(el => el.textContent = balance);
+    }
+    updateBalanceDisplay();
 
     // Nepali cities and hotel types
     const cities = ["Kathmandu", "Pokhara", "Chitwan", "Lalitpur", "Biratnagar", "Butwal", "Nepalgunj", "Dharan", "Bhaktapur", "Hetauda", "Janakpur"];
@@ -303,39 +294,59 @@
       document.getElementById("review-text").value = "";
     }
 
-    submitButton.onclick = function () {
-      const name = reviewerNameInput.value.trim();
-      const stars = document.getElementById("review-stars").value;
-      const review = document.getElementById("review-text").value.trim();
+    submitButton.addEventListener("click", () => {
+      const reviewText = document.getElementById("review-text").value.trim();
 
-      if (name && review) {
-        balance += 65;
-        localStorage.setItem("balance", balance);
-        balanceSpan.forEach(el => el.textContent = balance);
-        alert(`Thank you, ${name}! You earned Rs.65 for reviewing ${selectedHotel}.`);
-        closeModal();
-      } else {
-        alert("Please fill in your review text.");
+      if (reviewText === "") {
+        alert("Please enter your review.");
+        return;
       }
-    };
+
+      if (reviewedHotels.includes(selectedHotel)) {
+        alert("You have already reviewed this hotel today.");
+        return;
+      }
+
+      if (reviewsToday >= maxReviewsPerDay) {
+        alert("You have reached your daily review limit.");
+        return;
+      }
+
+      if (balance < 50) {
+        alert("Insufficient balance. Please deposit more to review.");
+        return;
+      }
+
+      balance -= 50; // Deduct Rs. 50 to review
+      balance += 65; // Add Rs. 65 reward
+
+      reviewsToday++;
+      reviewedHotels.push(selectedHotel);
+
+      // Save updated data to localStorage
+      localStorage.setItem("balance", balance);
+      localStorage.setItem("reviewsToday", reviewsToday);
+      localStorage.setItem("reviewedHotels", JSON.stringify(reviewedHotels));
+
+      updateBalanceDisplay();
+
+      alert(`Thank you, ${loggedInName}! You earned Rs. 65 for reviewing ${selectedHotel}. Rs. 50 was deducted for the review fee.`);
+
+      closeModal();
+    });
 
     function logout() {
       localStorage.removeItem("balance");
       localStorage.removeItem("loggedInUser");
       window.location.href = "login.html";
     }
-    
-    
-    
-    
-    
-    
-    const burger = document.getElementById('burger');
-const navLinks = document.getElementById('nav-links');
 
-burger.addEventListener('click', () => {
-  navLinks.classList.toggle('active');
-});
+    const burger = document.getElementById('burger');
+    const navLinks = document.getElementById('nav-links');
+
+    burger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+    });
 
   </script>
 </body>
