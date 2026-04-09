@@ -192,7 +192,7 @@
     <ul class="nav-links" id="nav-links">
       <li><a href="home.html">Home</a></li>
       <li><a href="submit.html">Submit</a></li>
-        <li><a href="admin-login.html">Admin</a></li>
+      <li><a href="admin-login.html">Admin</a></li>
       <li><a href="history.html">History</a></li>
       <li><a href="index.html" onclick="logout()">Logout</a></li>
     </ul>
@@ -239,33 +239,28 @@
 
   <script>
   // --- DATA LOAD ---
-  // 1. Logged in user ko phone number line
   const loggedInPhone = localStorage.getItem("loggedInUser");
-  
-  // 2. Sabai users ko list line
   const allUsers = JSON.parse(localStorage.getItem("users") || "{}");
-
-  // 3. Current user ko data check garne (Yadi login chaina bhane Guest User dekhaucha)
   const userData = allUsers[loggedInPhone] || { name: "Guest User", isSubscribed: false };
 
-  // Rules Logic (Based on userData)
+  // Rules Logic
   const IS_VIP = userData.isSubscribed === true;
   const TASK_LIMIT = IS_VIP ? 14 : 10;
   const REWARD = IS_VIP ? 70 : 65;
   const FEE = 50;
 
-  let balance = parseInt(localStorage.getItem("balance")) || 100;
+  // --- FIXED BALANCE LOGIC ---
+  // यहाँ check गरिन्छ कि balance पहिल्यै छ कि छैन। यदि छैन (null) भने मात्र १०० राखिन्छ।
+  let storedBalance = localStorage.getItem("balance");
+  let balance = (storedBalance === null) ? 100 : parseInt(storedBalance);
+
   let taskDone = parseInt(localStorage.getItem("reviewsToday")) || 0;
   let history = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
 
   // --- UI SETUP ---
   function initUI() {
-    // Mathi Member Name ma Full Name halne
     document.getElementById("user-name").textContent = userData.name;
-    
-    // Modal bhitra ko box ma pani Name halne
     document.getElementById("m-user-name").value = userData.name;
-    
     document.getElementById("balance-val").textContent = balance;
     document.getElementById("done-count").textContent = taskDone;
     document.getElementById("limit-count").textContent = TASK_LIMIT;
@@ -277,7 +272,6 @@
     }
   }
 
-  // Relatable Nepalese imagery
   const relatableHotels = [
     { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
     { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
@@ -289,7 +283,7 @@
 
   function renderHotels() {
     const list = document.getElementById("hotel-list");
-    list.innerHTML = ""; // List clear garne pahila
+    list.innerHTML = ""; 
     for (let i = 0; i < 40; i++) {
       const data = relatableHotels[i % relatableHotels.length];
       const hName = `${data.n} #${i + 101}`;
