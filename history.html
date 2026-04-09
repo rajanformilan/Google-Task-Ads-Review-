@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Task History - Review4Pay</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #2c3e50;
+      --success: #27ae60;
+      --accent: #3498db;
+    }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background: #f0f2f5;
+      color: #333;
+    }
+    /* Navbar */
+    .navbar {
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+    }
+    .logo { font-size: 1.3rem; font-weight: bold; display: flex; align-items: center; gap: 8px; }
+    .nav-links { list-style: none; display: flex; gap: 15px; margin: 0; }
+    .nav-links a { color: white; text-decoration: none; font-size: 0.9rem; opacity: 0.9; }
+
+    /* History Content */
+    .container {
+      max-width: 800px;
+      margin: 30px auto;
+      padding: 0 15px;
+    }
+    .history-card {
+      background: white;
+      border-radius: 12px;
+      padding: 20px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    h2 { margin-top: 0; color: var(--primary); font-size: 1.4rem; display: flex; align-items: center; gap: 10px; }
+    
+    .history-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+    }
+    .history-table th {
+      text-align: left;
+      background: #f8f9fa;
+      padding: 12px;
+      font-size: 0.85rem;
+      color: #7f8c8d;
+      text-transform: uppercase;
+    }
+    .history-table td {
+      padding: 15px 12px;
+      border-bottom: 1px solid #eee;
+      font-size: 0.95rem;
+    }
+    .status-pill {
+      background: #e8f5e9;
+      color: var(--success);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: bold;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #95a5a6;
+    }
+    .empty-state i { font-size: 3rem; margin-bottom: 15px; display: block; }
+
+    @media (max-width: 600px) {
+      .nav-links { display: none; }
+      .history-table th:nth-child(3), .history-table td:nth-child(3) { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav class="navbar">
+    <div class="logo"><i class="fas fa-coins"></i> Review4Pay</div>
+    <ul class="nav-links">
+      <li><a href="home.html">Home</a></li>
+      <li><a href="history.html" style="font-weight:bold; border-bottom: 2px solid white;">History</a></li>
+      <li><a href="index.html">Logout</a></li>
+    </ul>
+  </nav>
+
+  <div class="container">
+    <div class="history-card">
+      <h2><i class="fas fa-history"></i> Your Task History</h2>
+      
+      <div id="history-content">
+        </div>
+    </div>
+  </div>
+
+  <script>
+    function loadHistory() {
+      const historyContent = document.getElementById("history-content");
+      const reviewedHotels = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
+      const isVip = (JSON.parse(localStorage.getItem("users") || "{}")[localStorage.getItem("loggedInUser")] || {}).isSubscribed;
+      const rewardAmount = isVip ? 70 : 65;
+
+      if (reviewedHotels.length === 0) {
+        historyContent.innerHTML = `
+          <div class="empty-state">
+            <i class="fas fa-folder-open"></i>
+            <p>No tasks completed yet. Start earning on the Home page!</p>
+          </div>`;
+        return;
+      }
+
+      let tableHtml = `
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Hotel Name</th>
+              <th>Reward</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+      `;
+
+      // Show latest tasks first
+      reviewedHotels.reverse().forEach(hotelName => {
+        tableHtml += `
+          <tr>
+            <td><strong>${hotelName}</strong></td>
+            <td style="color:var(--success); font-weight:bold;">Rs. ${rewardAmount}</td>
+            <td><span class="status-pill">Completed</span></td>
+          </tr>
+        `;
+      });
+
+      tableHtml += `</tbody></table>`;
+      historyContent.innerHTML = tableHtml;
+    }
+
+    // Run on load
+    loadHistory();
+  </script>
+</body>
+</html>
