@@ -6,134 +6,177 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     body {
-      font-family: Arial, sans-serif;
-      max-width: 360px;
-      margin: 40px auto;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 400px;
+      margin: 30px auto;
       padding: 20px;
-      background: #f8f8f8;
-      border-radius: 10px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      background: #f4f7f6;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     }
-    h2 {
-      text-align: center;
-      margin-bottom: 20px;
+    h2 { text-align: center; color: #2c3e50; margin-bottom: 25px; }
+    
+    .balance-box {
+      background: #fff; padding: 15px; border-radius: 10px; text-align: center;
+      margin-bottom: 20px; border-left: 5px solid #27ae60;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.05);
     }
+    .bal-label { font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; display: block; }
+    .bal-amt { font-size: 1.5rem; font-weight: bold; color: #27ae60; }
+
+    .form-group { margin-bottom: 15px; }
+    label { font-size: 0.85rem; color: #34495e; font-weight: bold; display: block; margin-bottom: 5px; }
+
     select, input, button {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      font-size: 16px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
+      width: 100%; padding: 12px; font-size: 15px; border: 1px solid #dcdde1;
+      border-radius: 8px; box-sizing: border-box; outline: none;
     }
+
+    /* बैंकको नाम सुरुमा लुकाउनलाई */
+    #bank-name-group { display: none; }
+
     button {
-      background-color: #007bff;
-      color: white;
-      border: none;
-      font-weight: bold;
-      cursor: pointer;
+      background-color: #3498db; color: white; border: none; font-weight: bold;
+      margin-top: 10px; cursor: pointer; transition: 0.2s;
     }
+    button:hover { background-color: #2980b9; }
+
     .msg {
-      text-align: center;
-      margin-top: 15px;
-      font-weight: bold;
+      text-align: center; margin-top: 15px; padding: 10px; border-radius: 8px;
+      font-weight: bold; display: none;
     }
-    .balance {
-      text-align: center;
-      font-weight: bold;
-      color: #333;
-      margin-bottom: 10px;
-    }
+    .back-btn { display: block; text-align: center; margin-top: 20px; color: #7f8c8d; text-decoration: none; font-size: 0.9rem; }
   </style>
 </head>
 <body>
 
-  <h2>Submit Request</h2>
+  <h2>Payment Request</h2>
 
-  <div class="balance">Your Balance: Rs <span id="balance">0</span></div>
+  <div class="balance-box">
+    <span class="bal-label">Your Current Balance</span>
+    <span class="bal-amt">Rs. <span id="balance-display">0</span></span>
+  </div>
 
-  <select id="type">
-    <option value="Recharge">🔋 Recharge</option>
-    <option value="Withdraw">💸 Withdraw</option>
-  </select>
+  <div class="form-group">
+    <label>Transaction Type</label>
+    <select id="action-type">
+      <option value="Recharge">🔋 Recharge (Min. Rs 300)</option>
+      <option value="Withdraw">💸 Withdraw (Min. Rs 1000)</option>
+    </select>
+  </div>
 
-  <input type="number" id="amount" placeholder="Enter Amount (Rs)" />
+  <div class="form-group">
+    <label>Payment Method</label>
+    <select id="wallet-type" onchange="toggleBankInput()">
+      <option value="eSewa">eSewa</option>
+      <option value="Khalti">Khalti</option>
+      <option value="IME Pay">IME Pay</option>
+      <option value="Bank Transfer">Bank Transfer</option>
+    </select>
+  </div>
 
-  <input type="tel" id="number" placeholder="Enter Your Number" maxlength="15" />
+  <div class="form-group" id="bank-name-group">
+    <label>Bank Name</label>
+    <input type="text" id="bank-name-input" placeholder="e.g. Nabil Bank, Global IME" />
+  </div>
 
-  <button onclick="submitRequest()">Submit</button>
+  <div class="form-group">
+    <label>Amount (NPR)</label>
+    <input type="number" id="amount-input" placeholder="e.g. 1000" />
+  </div>
 
-  <div class="msg" id="msg"></div>
+  <div class="form-group">
+    <label>Number / Account Number</label>
+    <input type="tel" id="phone-input" placeholder="Enter number here" />
+  </div>
+
+  <button onclick="processRequest()">Submit Request</button>
+
+  <div id="status-msg" class="msg"></div>
+  <a href="home.html" class="back-btn">← Back to Dashboard</a>
 
   <script>
-    // Initialize balance if not present
-    if (localStorage.getItem("balance") === null) {
-      localStorage.setItem("balance", "0");
+    function getStoredBalance() {
+      let bal = localStorage.getItem("balance");
+      return (bal === null) ? 100 : parseFloat(bal);
     }
 
-    function updateBalanceUI() {
-      const bal = parseFloat(localStorage.getItem("balance") || "0");
-      document.getElementById("balance").textContent = bal.toFixed(2);
+    function refreshUI() {
+      document.getElementById("balance-display").textContent = getStoredBalance().toFixed(2);
     }
 
-    function submitRequest() {
-      const type = document.getElementById("type").value;
-      const amount = parseFloat(document.getElementById("amount").value);
-      const number = document.getElementById("number").value.trim();
-      const msg = document.getElementById("msg");
-      let balance = parseFloat(localStorage.getItem("balance") || "0");
+    // बैंक इनपुट देखाउने वा लुकाउने लजिक
+    function toggleBankInput() {
+      const method = document.getElementById("wallet-type").value;
+      const bankGroup = document.getElementById("bank-name-group");
+      bankGroup.style.display = (method === "Bank Transfer") ? "block" : "none";
+    }
 
-      if (!amount || amount <= 0) {
-        msg.style.color = "red";
-        msg.textContent = "⚠️ Enter a valid amount.";
-        return;
+    function processRequest() {
+      const action = document.getElementById("action-type").value;
+      const method = document.getElementById("wallet-type").value;
+      const bankName = document.getElementById("bank-name-input").value.trim();
+      const amount = parseFloat(document.getElementById("amount-input").value);
+      const number = document.getElementById("phone-input").value.trim();
+      
+      let currentBal = getStoredBalance();
+
+      // १. भ्यालिडेसन (Validation)
+      if (!amount || amount <= 0) return showAlert("⚠️ Please enter a valid amount.", "error");
+      if (action === "Recharge" && amount < 300) return showAlert("⚠️ Minimum Recharge is Rs. 300", "error");
+      if (action === "Withdraw" && amount < 1000) return showAlert("⚠️ Minimum Withdraw is Rs. 1000", "error");
+      if (number.length < 8) return showAlert("⚠️ Enter a valid account/phone number.", "error");
+      
+      // यदि बैंक छानेको छ भने बैंकको नाम खाली हुनुहुँदैन
+      if (method === "Bank Transfer" && bankName === "") {
+        return showAlert("⚠️ Please enter the Bank Name.", "error");
       }
 
-      if (!number || number.length < 8) {
-        msg.style.color = "red";
-        msg.textContent = "⚠️ Enter a valid number.";
-        return;
+      if (action === "Withdraw" && amount > currentBal) {
+        return showAlert(`❌ Insufficient Balance!`, "error");
       }
 
-      if (type === "Withdraw" && amount > balance) {
-        msg.style.color = "red";
-        msg.textContent = `❌ Insufficient balance. You have only Rs ${balance.toFixed(2)}.`;
-        return;
+      // २. ब्यालेन्स अपडेट
+      if (action === "Recharge") {
+        currentBal += amount;
+      } else {
+        currentBal -= amount;
       }
+      localStorage.setItem("balance", currentBal.toString());
 
-      // Process balance update
-      if (type === "Recharge") {
-        balance += amount;
-      } else if (type === "Withdraw") {
-        balance -= amount;
-      }
-
-      localStorage.setItem("balance", balance.toString());
-
-      // Save request
-      const request = {
-        type,
-        amount,
-        number,
-        date: new Date().toLocaleString()
+      // ३. डेटा सेभ
+      const newRequest = {
+        type: action,
+        method: method,
+        bank: (method === "Bank Transfer") ? bankName : "N/A",
+        amount: amount,
+        account: number,
+        time: new Date().toLocaleString(),
+        status: "Pending"
       };
 
-      const requests = JSON.parse(localStorage.getItem("requests") || "[]");
-      requests.push(request);
-      localStorage.setItem("requests", JSON.stringify(requests));
+      const history = JSON.parse(localStorage.getItem("requests") || "[]");
+      history.push(newRequest);
+      localStorage.setItem("requests", JSON.stringify(history));
 
-      msg.style.color = "green";
-      msg.textContent = `✅ ${type} request of Rs ${amount} submitted!`;
-
-      document.getElementById("amount").value = "";
-      document.getElementById("number").value = "";
-
-      updateBalanceUI();
+      showAlert(`✅ ${action} request submitted!`, "success");
+      
+      // फिल्ड क्लियर गर्ने
+      document.getElementById("amount-input").value = "";
+      document.getElementById("phone-input").value = "";
+      document.getElementById("bank-name-input").value = "";
+      refreshUI();
     }
 
-    // Load balance on page load
-    updateBalanceUI();
-  </script>
+    function showAlert(text, type) {
+      const msgBox = document.getElementById("status-msg");
+      msgBox.style.display = "block";
+      msgBox.textContent = text;
+      msgBox.style.background = (type === "error") ? "#fadbd8" : "#d4edda";
+      msgBox.style.color = (type === "error") ? "#943126" : "#155724";
+    }
 
+    refreshUI();
+  </script>
 </body>
 </html>
