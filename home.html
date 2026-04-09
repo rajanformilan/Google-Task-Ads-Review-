@@ -194,7 +194,7 @@
     <div id="hotels-container" class="hotel-grid"></div>
   </div>
 
-  <div class="wallet">Wallet Balance: Rs. <span id="balance">0</span></div>
+  <div class="wallet">Wallet Balance: Rs. <span id="balance">100</span></div>
 
   <!-- Modal -->
   <div id="review-modal">
@@ -224,7 +224,7 @@
     const reviewerNameInput = document.getElementById("reviewer-name");
 
     let selectedHotel = "";
-    let balance = parseInt(localStorage.getItem("balance")) || 0;
+    let balance = parseInt(localStorage.getItem("balance")) || 100;
 
     // Track how many reviews done today
     let reviewsToday = parseInt(localStorage.getItem("reviewsToday")) || 0;
