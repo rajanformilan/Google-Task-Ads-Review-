@@ -2,166 +2,157 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Bank Admin Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Admin - Balance & Order Manager</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f0f4f8;
-      padding: 20px;
-      max-width: 800px;
-      margin: auto;
-      color: #333;
-    }
+    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; }
+    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
+    .container { max-width: 900px; margin: auto; }
+    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
+    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    
+    /* Form Styling */
+    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; }
+    .btn-logout { background: var(--danger); margin-top: 20px; }
 
-    h2 {
-      color: #2c3e50;
-      text-align: center;
-    }
-
-    .card {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      margin-bottom: 20px;
-      box-shadow: 0 0 8px rgba(0,0,0,0.1);
-    }
-
-    label {
-      display: block;
-      margin: 10px 0 5px;
-      font-weight: bold;
-    }
-
-    input, textarea, button {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-      font-size: 16px;
-    }
-
-    button {
-      background-color: #2980b9;
-      color: white;
-      border: none;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background-color: #1f618d;
-    }
-
-    .logout {
-      background: red;
-      margin-top: 10px;
-    }
-
-    .order {
-      border-bottom: 1px dashed #aaa;
-      padding: 10px 0;
-    }
-
-    .success {
-      color: green;
-      font-weight: bold;
-    }
-
-    .error {
-      color: red;
-    }
+    /* History Table */
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+    th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; }
+    .amt-plus { color: var(--success); font-weight: bold; }
+    .amt-minus { color: var(--danger); font-weight: bold; }
+    
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
+    .bg-add { background: var(--success); }
+    .bg-deduct { background: var(--danger); }
   </style>
 </head>
 <body>
-  <h2>Bank Admin Panel</h2>
 
-  <!-- Orders -->
-  <div class="card">
-    <h3>Submitted Orders</h3>
-    <div id="orderList"></div>
+  <div class="container">
+    <h2><i class="fas fa-user-shield"></i> Admin Control Panel</h2>
+
+    <div class="card">
+      <h3><i class="fas fa-coins"></i> Add / Deduct Balance</h3>
+      <input type="text" id="targetMobile" placeholder="User Mobile Number (e.g. 98XXXXXXXX)">
+      <input type="number" id="targetAmount" placeholder="Amount (e.g. 500 to add, -200 to deduct)">
+      <button onclick="updateAndLogBalance()">Update Balance Now</button>
+      <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
+    </div>
+
+    <div class="card">
+      <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
+      <div id="historyTableContainer">
+        <table>
+          <thead>
+            <tr>
+              <th>User / Mobile</th>
+              <th>Action</th>
+              <th>Amount</th>
+              <th>Date & Time</th>
+            </tr>
+          </thead>
+          <tbody id="adminLogBody">
+            </tbody>
+        </table>
+      </div>
+      <button onclick="clearLogs()" style="background:#bdc3c7; font-size:0.8rem; width:auto; margin-top:10px;">Clear History</button>
+    </div>
+
+    <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
-
-  <!-- Balance Manager -->
-  <div class="card">
-    <h3>Add / Deduct Balance</h3>
-    <label for="username">User Name:</label>
-    <input type="text" id="username" placeholder="Full Name">
-
-    <label for="mobile">Mobile Number:</label>
-    <input type="text" id="mobile" placeholder="98XXXXXXXX">
-
-    <label for="amount">Amount (use - for deduction):</label>
-    <input type="number" id="amount" placeholder="Example: 100 or -50">
-
-    <button onclick="updateBalance()">Submit</button>
-    <p id="status"></p>
-  </div>
-
-  <button class="logout" onclick="logout()">Logout</button>
 
   <script>
-    // Admin Login Check
-    if (localStorage.getItem("isAdmin") !== "true") {
-      window.location.href = "admin-login.html";
+    // Security
+    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
+
+    // --- LOGIC: UPDATE & SAVE LOG ---
+    function updateAndLogBalance() {
+      const mobile = document.getElementById("targetMobile").value.trim();
+      const amount = parseFloat(document.getElementById("targetAmount").value);
+      const status = document.getElementById("statusMsg");
+
+      if(!mobile || isNaN(amount)) {
+        alert("Mobile ra Amount dubai halnus!");
+        return;
+      }
+
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+      if(!users[mobile]) {
+        alert("यो मोबाइल नम्बर भएको युजर भेटिएन!");
+        return;
+      }
+
+      // 1. Balance update garne (User side ma)
+      let currentBal = parseInt(localStorage.getItem("balance")) || 0;
+      let newBal = currentBal + amount;
+      localStorage.setItem("balance", newBal);
+
+      // 2. Transaction Log banaune (Admin record ko lagi)
+      const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
+      const newLog = {
+        name: users[mobile].name,
+        mobile: mobile,
+        type: amount > 0 ? "ADDED" : "DEDUCTED",
+        amount: Math.abs(amount),
+        time: new Date().toLocaleString()
+      };
+      adminLogs.push(newLog);
+      localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
+
+      // 3. UI Update
+      status.style.color = "green";
+      status.textContent = `✅ Done! Rs. ${Math.abs(amount)} ${newLog.type} to ${users[mobile].name}`;
+      
+      document.getElementById("targetMobile").value = "";
+      document.getElementById("targetAmount").value = "";
+      
+      loadAdminLogs(); // Table refresh garne
     }
 
-    // Load Orders
-    const orderList = document.getElementById("orderList");
-    const orders = JSON.parse(localStorage.getItem("orders") || "[]");
+    // --- LOGIC: DISPLAY LOGS ---
+    function loadAdminLogs() {
+      const logBody = document.getElementById("adminLogBody");
+      const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
 
-    if (orders.length === 0) {
-      orderList.innerHTML = "<p>No orders found.</p>";
-    } else {
-      orders.forEach(order => {
-        orderList.innerHTML += `
-          <div class="order">
-            <strong>${order.name}</strong> (${order.email})<br>
-            <em>${order.time}</em><br>
-            ${order.message}
-          </div>
+      if(logs.length === 0) {
+        logBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No history found.</td></tr>";
+        return;
+      }
+
+      logBody.innerHTML = "";
+      logs.reverse().forEach(log => {
+        const typeClass = log.type === "ADDED" ? "bg-add" : "bg-deduct";
+        const amtClass = log.type === "ADDED" ? "amt-plus" : "amt-minus";
+        const symbol = log.type === "ADDED" ? "+" : "-";
+
+        logBody.innerHTML += `
+          <tr>
+            <td><strong>${log.name}</strong><br><small>${log.mobile}</small></td>
+            <td><span class="status-badge ${typeClass}">${log.type}</span></td>
+            <td class="${amtClass}">${symbol} Rs. ${log.amount}</td>
+            <td>${log.time}</td>
+          </tr>
         `;
       });
     }
 
-    // Update Balance Function
-    function updateBalance() {
-      const name = document.getElementById("username").value.trim();
-      const mobile = document.getElementById("mobile").value.trim();
-      const amount = parseFloat(document.getElementById("amount").value);
-      const status = document.getElementById("status");
-
-      if (!name || !mobile || isNaN(amount)) {
-        status.innerHTML = "⚠ Please fill all fields correctly.";
-        status.className = "error";
-        return;
+    function clearLogs() {
+      if(confirm("Pura transaction history delete garne?")) {
+        localStorage.setItem("adminLogs", "[]");
+        loadAdminLogs();
       }
-
-      const users = JSON.parse(localStorage.getItem("users") || "[]");
-      const user = users.find(u => u.name === name && u.mobile === mobile);
-
-      if (!user) {
-        status.innerHTML = "❌ User not found.";
-        status.className = "error";
-        return;
-      }
-
-      user.balance = (user.balance || 0) + amount;
-      localStorage.setItem("users", JSON.stringify(users));
-
-      status.innerHTML = `✅ Balance updated. New Balance: Rs ${user.balance}`;
-      status.className = "success";
-
-      // Optional: clear input fields
-      document.getElementById("username").value = '';
-      document.getElementById("mobile").value = '';
-      document.getElementById("amount").value = '';
     }
 
-    // Logout
     function logout() {
       localStorage.removeItem("isAdmin");
       window.location.href = "admin-login.html";
     }
+
+    // Initial Load
+    loadAdminLogs();
   </script>
 </body>
 </html>
