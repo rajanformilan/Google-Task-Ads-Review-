@@ -3,115 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Gateway - Review4Pay</title>
+    <title>Payment Portal - Review4Pay</title>
     <style>
-        :root {
-            --khalti: #5c2d91;
-            --bank: #3f51b5;
-            --success: #27ae60;
-            --bg: #f4f7f6;
-        }
-
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
-
-        .container {
-            background: white;
-            padding: 25px;
-            border-radius: 15px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            width: 100%;
-            max-width: 450px;
-        }
-
+        :root { --khalti: #5c2d91; --bank: #3f51b5; --success: #27ae60; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg); margin: 0; display: flex; justify-content: center; align-items: center; min-height: 100vh; }
+        .container { background: white; padding: 25px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); width: 100%; max-width: 450px; }
         h2 { text-align: center; color: #333; margin-top: 0; }
-
-        /* Balance Section */
-        .balance-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            margin-bottom: 20px;
-        }
+        .balance-card { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 20px; }
         .bal-amt { font-size: 2.2rem; font-weight: bold; }
-
-        /* Tabs */
-        .tab-buttons {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            background: #eee;
-            transition: 0.3s;
-        }
+        .tab-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { flex: 1; padding: 12px; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; background: #eee; transition: 0.3s; }
         .tab-btn.active { background: var(--khalti); color: white; }
-
-        /* Recharge QR Section */
-        .qr-selection {
-            display: none;
-            text-align: center;
-            background: #fff;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 20px;
-            border: 2px dashed var(--khalti);
-        }
+        .qr-selection { display: none; text-align: center; background: #fff; padding: 15px; border-radius: 10px; margin-bottom: 20px; border: 2px dashed var(--khalti); }
         .option-box { display: flex; justify-content: space-around; margin-bottom: 15px; }
-        .pay-option {
-            cursor: pointer; padding: 10px; border: 2px solid #eee;
-            border-radius: 10px; text-align: center; width: 45%;
-        }
+        .pay-option { cursor: pointer; padding: 10px; border: 2px solid #eee; border-radius: 10px; text-align: center; width: 45%; }
         .pay-option.selected { border-color: var(--khalti); background: #f0ebf5; }
-
-        /* Form Controls */
         .form-group { margin-bottom: 15px; }
         label { font-weight: 600; display: block; margin-bottom: 5px; color: #555; }
-        input, select {
-            width: 100%; padding: 12px; border: 1px solid #ddd;
-            border-radius: 8px; box-sizing: border-box; font-size: 16px;
-        }
-
-        .btn-main {
-            width: 100%; padding: 15px; background: var(--bank);
-            color: white; border: none; border-radius: 8px;
-            font-size: 1.1rem; font-weight: bold; cursor: pointer;
-        }
-
-        .msg {
-            margin-top: 15px; padding: 15px; border-radius: 8px;
-            display: none; font-weight: 600; line-height: 1.5;
-        }
+        input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; font-size: 16px; }
+        .btn-main { width: 100%; padding: 15px; background: var(--bank); color: white; border: none; border-radius: 8px; font-size: 1.1rem; font-weight: bold; cursor: pointer; }
+        .msg { margin-top: 15px; padding: 15px; border-radius: 8px; display: none; font-weight: 600; text-align: center; }
         .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
         .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-
-        .email-link {
-            display: inline-block; background: #ff9800; color: white;
-            padding: 10px 15px; text-decoration: none; border-radius: 5px;
-            margin-top: 10px; font-size: 0.9rem;
-        }
+        .email-link { display: block; background: #ff9800; color: white; padding: 15px; text-decoration: none; border-radius: 8px; margin-top: 10px; font-weight: bold; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <h2>💳 Payment Hub</h2>
-
+    
     <div class="balance-card">
         <span style="font-size: 0.9rem; opacity: 0.9;">Available Balance</span>
         <div class="bal-amt">Rs. <span id="display-bal">0.00</span></div>
@@ -132,13 +53,12 @@
                 <strong>Bank</strong><br><small>Nabil Bank</small>
             </div>
         </div>
-
         <div id="qr-display" class="qr-selection">
             <p id="qr-name" style="font-weight: bold; margin: 0; color: var(--khalti);"></p>
-            <div style="background: #eee; height: 150px; margin: 10px 0; display: flex; align-items: center; justify-content: center; border-radius: 8px;">
-                <span id="qr-text" style="font-weight: bold; padding: 10px; text-align: center;">[QR Code / Info]</span>
+            <div style="background: #eee; height: 120px; margin: 10px 0; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.9rem;">
+                <span id="qr-text" style="font-weight: bold; padding: 10px; text-align: center;">[Details Placeholder]</span>
             </div>
-            <p style="font-size: 0.8rem; color: #666; margin: 0;">Scan & pay before submitting details.</p>
+            <p style="font-size: 0.75rem; color: #666;">Scan & pay before submitting details.</p>
         </div>
     </div>
 
@@ -148,7 +68,7 @@
     </div>
 
     <div class="form-group">
-        <label id="amt-label">Amount (NPR):</label>
+        <label id="amt-label">Withdraw Amount (10% Tax):</label>
         <input type="number" id="amount" placeholder="Min. 1000">
     </div>
 
@@ -157,16 +77,15 @@
         <input type="text" id="account-id" placeholder="Phone number or Acc No.">
     </div>
 
-    <button class="btn-main" id="submit-btn" onclick="handlePayment()">Submit Request</button>
-
+    <button class="btn-main" id="submit-btn" onclick="handlePayment()">Generate Request</button>
+    
     <div id="msgBox" class="msg"></div>
-
     <p style="text-align: center;"><a href="home.html" style="color: #666; text-decoration: none; font-size: 0.9rem;">← Back to Home</a></p>
 </div>
 
 <script>
     let currentMode = 'Withdraw';
-    const ADMIN_EMAIL = 'shopnixita@gmail.com';
+    const ADMIN_EMAIL = 'milankandel584@gmail.com'; // तपाईंको ईमेल अपडेट गरिएको
 
     function getBal() {
         let b = localStorage.getItem('balance');
@@ -181,20 +100,18 @@
         currentMode = mode;
         document.getElementById('btn-withdraw').classList.toggle('active', mode === 'Withdraw');
         document.getElementById('btn-recharge').classList.toggle('active', mode === 'Recharge');
-        
         document.getElementById('recharge-area').style.display = (mode === 'Recharge') ? 'block' : 'none';
         document.getElementById('qr-display').style.display = 'none';
         
-        // UI Text updates
         document.getElementById('amt-label').textContent = (mode === 'Withdraw') ? "Withdraw Amount (10% Tax):" : "Amount Paid (NPR):";
         document.getElementById('amount').placeholder = (mode === 'Withdraw') ? "Min. 1000" : "Min. 300";
-        document.getElementById('method-name').placeholder = (mode === 'Withdraw') ? "Where to receive? (e.g. eSewa)" : "Where did you pay? (Khalti/Bank)";
+        document.getElementById('method-name').placeholder = (mode === 'Withdraw') ? "Target Wallet Name" : "Source Wallet Name";
         document.getElementById('submit-btn').textContent = (mode === 'Withdraw') ? "Request Withdrawal" : "Submit Payment Proof";
     }
 
     function showQR(type) {
         document.getElementById('qr-display').style.display = 'block';
-        document.getElementById('qr-name').textContent = type + " Payment Details";
+        document.getElementById('qr-name').textContent = type + " Details";
         document.getElementById('opt-khalti').classList.toggle('selected', type === 'Khalti');
         document.getElementById('opt-bank').classList.toggle('selected', type === 'Bank');
         
@@ -217,24 +134,36 @@
         if(currentMode === 'Withdraw') {
             if(amount < 1000) return showMsg("Minimum withdrawal is Rs. 1000", "error");
             if(amount > bal) return showMsg("Insufficient balance!", "error");
-
+            
             const tax = amount * 0.10;
             const net = amount - tax;
-            
-            // Deduct balance
+
+            // ब्यालेन्स घटाउने
             bal -= amount;
             localStorage.setItem('balance', bal.toFixed(2));
             refreshUI();
 
-            showMsg(`✅ Withdrawal Requested! <br>Rs. ${amount} deducted. <br>You will receive Rs. ${net.toFixed(2)} in your ${method} wallet soon.`, "success");
+            generateEmail(amount, method, account, net);
         } else {
             // Recharge
             if(amount < 300) return showMsg("Minimum recharge is Rs. 300", "error");
-            
-            const mailLink = `mailto:${ADMIN_EMAIL}?subject=PaymentProof&body=Method: ${method}%0D%0AAmount: ${amount}%0D%0AAccount: ${account}%0D%0A(Please attach screenshot)`;
-            
-            showMsg(`✅ Request Logged! <br>To complete, you MUST send the screenshot via email: <br><a href="${mailLink}" class="email-link">Click to Send Email to Admin</a>`, "success");
+            generateEmail(amount, method, account, null);
         }
+    }
+
+    function generateEmail(amount, method, account, net) {
+        let subject = `${currentMode} Request - NPR ${amount}`;
+        let body = `Hello Admin,%0D%0A%0D%0AI have a new ${currentMode} request.%0D%0A%0D%0A--- DETAILS ---%0D%0AType: ${currentMode}%0D%0AMethod: ${method}%0D%0AAmount: NPR ${amount}%0D%0AUser Account: ${account}`;
+        
+        if(net !== null) {
+            body += `%0D%0ANet Payout: NPR ${net.toFixed(2)} (after 10% tax)`;
+        } else {
+            body += `%0D%0A%0D%0A(Note: I have attached my payment screenshot for recharge proof.)`;
+        }
+        
+        const mailLink = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${body}`;
+        
+        showMsg(`✅ Request Processed!<br><a href="${mailLink}" class="email-link">CONFIRM & SEND EMAIL NOW</a><br><small>Click the button to open your email and hit 'Send'.</small>`, "success");
     }
 
     function showMsg(txt, type) {
@@ -246,6 +175,5 @@
 
     window.onload = refreshUI;
 </script>
-
 </body>
 </html>
