@@ -238,127 +238,137 @@
   </div>
 
   <script>
-    // --- DATA LOAD ---
-    const phone = localStorage.getItem("loggedInUser") || "guest";
-    const users = JSON.parse(localStorage.getItem("users") || "{}");
+  // --- DATA LOAD ---
+  // 1. Logged in user ko phone number line
+  const loggedInPhone = localStorage.getItem("loggedInUser");
+  
+  // 2. Sabai users ko list line
+  const allUsers = JSON.parse(localStorage.getItem("users") || "{}");
+
+  // 3. Current user ko data check garne (Yadi login chaina bhane Guest User dekhaucha)
+  const userData = allUsers[loggedInPhone] || { name: "Guest User", isSubscribed: false };
+
+  // Rules Logic (Based on userData)
+  const IS_VIP = userData.isSubscribed === true;
+  const TASK_LIMIT = IS_VIP ? 14 : 10;
+  const REWARD = IS_VIP ? 70 : 65;
+  const FEE = 50;
+
+  let balance = parseInt(localStorage.getItem("balance")) || 100;
+  let taskDone = parseInt(localStorage.getItem("reviewsToday")) || 0;
+  let history = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
+
+  // --- UI SETUP ---
+  function initUI() {
+    // Mathi Member Name ma Full Name halne
+    document.getElementById("user-name").textContent = userData.name;
     
-    // Guest User Logic
-    const user = users[phone] || { name: "Guest User", isSubscribed: false };
+    // Modal bhitra ko box ma pani Name halne
+    document.getElementById("m-user-name").value = userData.name;
+    
+    document.getElementById("balance-val").textContent = balance;
+    document.getElementById("done-count").textContent = taskDone;
+    document.getElementById("limit-count").textContent = TASK_LIMIT;
 
-    // Rules Logic
-    const IS_VIP = user.isSubscribed === true;
-    const TASK_LIMIT = IS_VIP ? 14 : 10;
-    const REWARD = IS_VIP ? 70 : 65;
-    const FEE = 50;
+    if(IS_VIP) {
+      const badge = document.getElementById("tier-badge");
+      badge.textContent = "VIP";
+      badge.style.background = "#8e44ad";
+    }
+  }
 
-    let balance = parseInt(localStorage.getItem("balance")) || 100;
-    let taskDone = parseInt(localStorage.getItem("reviewsToday")) || 0;
-    let history = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
+  // Relatable Nepalese imagery
+  const relatableHotels = [
+    { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
+    { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
+    { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
+    { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
+    { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
+    { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
+  ];
 
-    // --- UI SETUP ---
-    function initUI() {
-      document.getElementById("user-name").textContent = user.name;
-      document.getElementById("m-user-name").value = user.name;
-      document.getElementById("balance-val").textContent = balance;
-      document.getElementById("done-count").textContent = taskDone;
-      document.getElementById("limit-count").textContent = TASK_LIMIT;
-      
-      if(IS_VIP) {
-        const badge = document.getElementById("tier-badge");
-        badge.textContent = "VIP";
-        badge.style.background = "#8e44ad";
-      }
+  function renderHotels() {
+    const list = document.getElementById("hotel-list");
+    list.innerHTML = ""; // List clear garne pahila
+    for (let i = 0; i < 40; i++) {
+      const data = relatableHotels[i % relatableHotels.length];
+      const hName = `${data.n} #${i + 101}`;
+      const card = document.createElement("div");
+      card.className = "hotel-card";
+      card.innerHTML = `
+        <div class="reward-pill">Rs. ${REWARD}</div>
+        <img src="${data.img}&sig=${i}" alt="hotel">
+        <div class="hotel-info">
+          <h3>${hName}</h3>
+          <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
+        </div>
+      `;
+      list.appendChild(card);
+    }
+  }
+
+  // --- LOGIC ---
+  let activeHotel = "";
+
+  function openReview(name) {
+    activeHotel = name;
+    document.getElementById("m-hotel-name").textContent = name;
+    document.getElementById("review-modal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("review-modal").style.display = "none";
+    document.getElementById("review-text").value = "";
+  }
+
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    const txt = document.getElementById("review-text").value.trim();
+
+    if(txt.length < 10) {
+      alert("Please write a proper review (min 10 characters).");
+      return;
+    }
+    if(history.includes(activeHotel)) {
+      alert("You already completed this task today.");
+      return;
+    }
+    if(taskDone >= TASK_LIMIT) {
+      alert(`Limit reached! Upgrade to VIP for more tasks.`);
+      return;
+    }
+    if(balance < FEE) {
+      alert("Insufficient balance to cover security fee (Rs. 50).");
+      return;
     }
 
-    // Relatable Nepalese imagery
-    const relatableHotels = [
-      { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
-      { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
-      { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
-      { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
-      { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
-      { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
-    ];
+    // Calculation
+    balance = (balance - FEE) + REWARD;
+    taskDone++;
+    history.push(activeHotel);
 
-    function renderHotels() {
-      const list = document.getElementById("hotel-list");
-      for (let i = 0; i < 40; i++) {
-        const data = relatableHotels[i % relatableHotels.length];
-        const hName = `${data.n} #${i + 101}`;
-        const card = document.createElement("div");
-        card.className = "hotel-card";
-        card.innerHTML = `
-          <div class="reward-pill">Rs. ${REWARD}</div>
-          <img src="${data.img}&sig=${i}" alt="hotel">
-          <div class="hotel-info">
-            <h3>${hName}</h3>
-            <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
-          </div>
-        `;
-        list.appendChild(card);
-      }
-    }
-
-    // --- LOGIC ---
-    let activeHotel = "";
-
-    function openReview(name) {
-      activeHotel = name;
-      document.getElementById("m-hotel-name").textContent = name;
-      document.getElementById("review-modal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("review-modal").style.display = "none";
-      document.getElementById("review-text").value = "";
-    }
-
-    document.getElementById("submit-btn").addEventListener("click", () => {
-      const txt = document.getElementById("review-text").value.trim();
-
-      if(txt.length < 10) {
-        alert("Please write a proper review (min 10 characters).");
-        return;
-      }
-      if(history.includes(activeHotel)) {
-        alert("You already completed this task today.");
-        return;
-      }
-      if(taskDone >= TASK_LIMIT) {
-        alert(`Limit reached! Upgrade to VIP for more tasks.`);
-        return;
-      }
-      if(balance < FEE) {
-        alert("Insufficient balance to cover security fee (Rs. 50).");
-        return;
-      }
-
-      // Calculation
-      balance = (balance - FEE) + REWARD;
-      taskDone++;
-      history.push(activeHotel);
-
-      // Save
-      localStorage.setItem("balance", balance);
-      localStorage.setItem("reviewsToday", taskDone);
-      localStorage.setItem("reviewedHotels", JSON.stringify(history));
-
-      initUI();
-      alert(`Success! Reward of Rs. ${REWARD} added.`);
-      closeModal();
-    });
-
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      window.location.href = "login.html";
-    }
-
-    document.getElementById("burger").onclick = () => {
-      document.getElementById("nav-links").classList.toggle("active");
-    };
+    // Save
+    localStorage.setItem("balance", balance);
+    localStorage.setItem("reviewsToday", taskDone);
+    localStorage.setItem("reviewedHotels", JSON.stringify(history));
 
     initUI();
-    renderHotels();
-  </script>
+    alert(`Success! Reward of Rs. ${REWARD} added.`);
+    closeModal();
+  });
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("burger").onclick = () => {
+    document.getElementById("nav-links").classList.toggle("active");
+  };
+
+  // Run initial functions
+  initUI();
+  renderHotels();
+</script>
+  
 </body>
 </html>
