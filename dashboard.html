@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | User Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-gray-900 text-gray-100 font-sans">
+
+    <div class="min-h-screen flex flex-col">
+        <nav class="bg-gray-800 border-b border-gray-700 p-4">
+            <div class="container mx-auto flex justify-between items-center">
+                <h1 class="text-xl font-bold text-blue-400">Control Panel</h1>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-400">Admin Session</span>
+                    <button class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded text-sm transition">Logout</button>
+                </div>
+            </div>
+        </nav>
+
+        <main class="flex-grow container mx-auto p-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-blue-500/20 rounded-lg text-blue-400 mr-4">
+                            <i class="fas fa-users fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Total Sign-ups</p>
+                            <h2 class="text-3xl font-bold" id="total-users">1,248</h2>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 p-6 rounded-xl border border-gray-700 shadow-lg">
+                    <div class="flex items-center">
+                        <div class="p-3 bg-green-500/20 rounded-lg text-green-400 mr-4">
+                            <i class="fas fa-signal fa-2x"></i>
+                        </div>
+                        <div>
+                            <p class="text-gray-400 text-sm">Currently Online</p>
+                            <h2 class="text-3xl font-bold text-green-400" id="online-users">42</h2>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-xl overflow-hidden">
+                <div class="p-6 border-b border-gray-700 flex justify-between items-center">
+                    <h3 class="text-lg font-semibold">Recent Registrations</h3>
+                    <button onclick="location.reload()" class="text-sm bg-gray-700 hover:bg-gray-600 px-4 py-2 rounded-lg transition">
+                        <i class="fas fa-sync-alt mr-2"></i>Refresh
+                    </button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-700/50 text-gray-400 text-sm uppercase">
+                            <tr>
+                                <th class="px-6 py-4">User</th>
+                                <th class="px-6 py-4">Email</th>
+                                <th class="px-6 py-4">Joined Date</th>
+                                <th class="px-6 py-4">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-gray-700">
+                            <tr class="hover:bg-gray-750 transition">
+                                <td class="px-6 py-4 font-medium">Alex Rivera</td>
+                                <td class="px-6 py-4 text-gray-400">alex@example.com</td>
+                                <td class="px-6 py-4 text-gray-400">2026-04-10</td>
+                                <td class="px-6 py-4">
+                                    <span class="flex items-center text-green-400 text-xs font-bold uppercase">
+                                        <span class="h-2 w-2 bg-green-400 rounded-full mr-2 animate-pulse"></span>
+                                        Online
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr class="hover:bg-gray-750 transition">
+                                <td class="px-6 py-4 font-medium">Sarah Chen</td>
+                                <td class="px-6 py-4 text-gray-400">schen@example.com</td>
+                                <td class="px-6 py-4 text-gray-400">2026-04-09</td>
+                                <td class="px-6 py-4">
+                                    <span class="flex items-center text-gray-500 text-xs font-bold uppercase">
+                                        <span class="h-2 w-2 bg-gray-600 rounded-full mr-2"></span>
+                                        Offline
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </main>
+    </div>
+
+</body>
+</html>
