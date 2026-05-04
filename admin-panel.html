@@ -3,147 +3,188 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Realtime Control</title>
+  <title>Admin - Cloud Balance Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Firebase App (the core Firebase SDK) -->
+  <!-- Firebase Core SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <!-- Firebase Realtime Database SDK -->
   <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
 
   <style>
-    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; --purple: #8e44ad; }
+    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; }
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-    .container { max-width: 950px; margin: auto; }
+    .container { max-width: 900px; margin: auto; }
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
+    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
     input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
-    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    .btn-quick { background: var(--purple); }
-    .table-container { overflow-x: auto; margin-top: 15px; }
-    table { width: 100%; border-collapse: collapse; }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; }
+    .btn-logout { background: var(--danger); margin-top: 20px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    .balance-tag { font-weight: bold; color: var(--success); }
+    th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; }
+    .amt-plus { color: var(--success); font-weight: bold; }
+    .amt-minus { color: var(--danger); font-weight: bold; }
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
+    .bg-add { background: var(--success); }
+    .bg-deduct { background: var(--danger); }
+    a { text-decoration: none; color: white; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2><i class="fas fa-user-shield"></i> Admin Master Panel (Cloud)</h2>
 
-    <!-- 1. LIVE USER DIRECTORY -->
+  <div class="container">
+    <button style="width: auto; background: #2563eb; margin-bottom: 15px;">
+        <a href="dashboard.html"><i class="fas fa-plane"></i> Data Center - Check</a>
+    </button>
+
+    <h2><i class="fas fa-user-shield"></i> Admin Control Panel (Cloud Mode)</h2>
+    
     <div class="card">
-      <h3><i class="fas fa-users"></i> Realtime User Balances</h3>
-      <div class="table-container">
+      <h3><i class="fas fa-coins"></i> Add / Deduct Balance</h3>
+      <input type="text" id="targetMobile" placeholder="User Mobile Number (e.g. 98XXXXXXXX)">
+      <input type="number" id="targetAmount" placeholder="Amount (e.g. 500 to add, -200 to deduct)">
+      <button onclick="updateAndLogBalance()">Update Cloud Balance Now</button>
+      <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
+    </div>
+
+    <div class="card">
+      <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
+      <div id="historyTableContainer">
         <table>
           <thead>
             <tr>
-              <th>User Name</th>
               <th>Mobile Number</th>
-              <th>Cloud Balance</th>
+              <th>Action</th>
+              <th>Amount</th>
+              <th>Date & Time</th>
             </tr>
           </thead>
-          <tbody id="userTableBody">
-            <tr><td colspan="3" style="text-align:center;">Connecting to database...</td></tr>
-          </tbody>
+          <tbody id="adminLogBody"></tbody>
         </table>
       </div>
+      <button onclick="clearLogs()" style="background:#bdc3c7; font-size:0.8rem; width:auto; margin-top:10px;">Clear History</button>
     </div>
 
-    <!-- 2. QUICK FIX SECTION -->
-    <div class="card">
-      <h3><i class="fas fa-bolt"></i> Quick Update (+9779824235220)</h3>
-      <input type="number" id="quickAmount" placeholder="Amount to add (e.g. 350)">
-      <button class="btn-quick" onclick="quickUpdate('+9779824235220')">Update 9824235220 Now</button>
-    </div>
-
-    <!-- 3. STANDARD UPDATER -->
-    <div class="card">
-      <h3><i class="fas fa-coins"></i> Manual Update</h3>
-      <input type="text" id="targetMobile" placeholder="Enter Mobile Number">
-      <input type="number" id="targetAmount" placeholder="Amount">
-      <button onclick="updateBalance()">Update Balance</button>
-      <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
-    </div>
+    <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
 
   <script>
-    // 1. YOUR FIREBASE CONFIGURATION
-    // Replace these with your actual Firebase project details
+    // --- FIREBASE INITIALIZATION ---
     const firebaseConfig = {
-      apiKey: "YOUR_API_KEY",
-      authDomain: "YOUR_PROJECT.firebaseapp.com",
-      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
-      projectId: "YOUR_PROJECT_ID",
-      storageBucket: "YOUR_PROJECT.appspot.com",
-      messagingSenderId: "YOUR_ID",
-      appId: "YOUR_APP_ID"
+        apiKey: "AIzaSyCcZSisqL3RIVN91v6GgCUL3RIVN91v6Gg",
+        authDomain: "my-review-9aea1.firebaseapp.com",
+        databaseURL: "https://my-review-9aea1-default-rtdb.firebaseio.com",
+        projectId: "my-review-9aea1",
+        storageBucket: "my-review-9aea1.firebasestorage.app",
+        messagingSenderId: "923523588654",
+        appId: "1:923523588654:web:942ce2a6122d997d64359e"
     };
 
-    // Initialize Firebase
     firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    // 2. READ USERS IN REALTIME
-    db.ref('users').on('value', (snapshot) => {
-      const users = snapshot.val();
-      const userTableBody = document.getElementById("userTableBody");
-      userTableBody.innerHTML = "";
+    // Security check
+    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
 
-      if (!users) {
-        userTableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No users in cloud database.</td></tr>";
+    // --- LOGIC: UPDATE CLOUD DATABASE ---
+    function updateAndLogBalance() {
+      const rawMobile = document.getElementById("targetMobile").value.trim();
+      const amount = parseFloat(document.getElementById("targetAmount").value);
+      const status = document.getElementById("statusMsg");
+
+      if(!rawMobile || isNaN(amount)) {
+        alert("Mobile ra Amount dubai halnus!");
         return;
       }
 
-      Object.keys(users).forEach(key => {
-        const user = users[key];
-        // Ensure we display correctly even if key is missing +977
-        const displayKey = key.startsWith('9') ? '+977' + key : key;
-        userTableBody.innerHTML += `
+      // Clean the mobile number to match database format
+      const mobile = rawMobile.replace("+977", "").replace("+", "").trim();
+      const userRef = db.ref('users/' + mobile);
+
+      status.textContent = "Updating Cloud...";
+      status.style.color = "orange";
+
+      // Fetch current balance from Firebase first
+      userRef.get().then((snapshot) => {
+        let currentBal = 0;
+        if (snapshot.exists() && snapshot.val().balance) {
+            currentBal = parseFloat(snapshot.val().balance);
+        }
+
+        const newBal = currentBal + amount;
+
+        // Update Firebase
+        userRef.update({
+          balance: newBal,
+          lastUpdate: new Date().toLocaleString()
+        }).then(() => {
+          // Log locally for admin history
+          saveLocalLog(mobile, amount);
+          
+          status.style.color = "green";
+          status.textContent = `✅ Success! New Balance for ${mobile}: Rs. ${newBal}`;
+          
+          document.getElementById("targetMobile").value = "";
+          document.getElementById("targetAmount").value = "";
+          loadAdminLogs();
+        });
+      }).catch(err => {
+          alert("Error: Make sure your Firebase Rules are set to true!");
+          status.textContent = "Error connecting to Firebase.";
+          status.style.color = "red";
+      });
+    }
+
+    function saveLocalLog(mobile, amount) {
+      const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
+      const newLog = {
+        mobile: mobile,
+        type: amount > 0 ? "ADDED" : "DEDUCTED",
+        amount: Math.abs(amount),
+        time: new Date().toLocaleString()
+      };
+      adminLogs.push(newLog);
+      localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
+    }
+
+    function loadAdminLogs() {
+      const logBody = document.getElementById("adminLogBody");
+      const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
+      
+      if(logs.length === 0) {
+        logBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No history found.</td></tr>";
+        return;
+      }
+
+      logBody.innerHTML = "";
+      logs.reverse().forEach(log => {
+        const typeClass = log.type === "ADDED" ? "bg-add" : "bg-deduct";
+        const amtClass = log.type === "ADDED" ? "amt-plus" : "amt-minus";
+        const symbol = log.type === "ADDED" ? "+" : "-";
+        
+        logBody.innerHTML += `
           <tr>
-            <td><strong>${user.name || 'User'}</strong></td>
-            <td>${displayKey}</td>
-            <td class="balance-tag">Rs. ${user.balance || 0}</td>
+            <td>${log.mobile}</td>
+            <td><span class="status-badge ${typeClass}">${log.type}</span></td>
+            <td class="${amtClass}">${symbol} Rs. ${log.amount}</td>
+            <td>${log.time}</td>
           </tr>
         `;
       });
-    });
-
-    // 3. UPDATE LOGIC
-    function quickUpdate(mobile) {
-      const amount = parseFloat(document.getElementById("quickAmount").value);
-      if(isNaN(amount)) return alert("Enter amount");
-      applyUpdate(mobile, amount);
     }
 
-    function updateBalance() {
-      const mobile = document.getElementById("targetMobile").value.trim();
-      const amount = parseFloat(document.getElementById("targetAmount").value);
-      if(!mobile || isNaN(amount)) return alert("Fill all fields");
-      applyUpdate(mobile, amount);
+    function clearLogs() {
+      if(confirm("Pura transaction history delete garne?")) {
+        localStorage.setItem("adminLogs", "[]");
+        loadAdminLogs();
+      }
     }
 
-    function applyUpdate(mobile, amount) {
-      // Standardize the key to remove +977 for the database key
-      const cleanKey = mobile.replace("+977", "").trim();
-      const userRef = db.ref('users/' + cleanKey);
-
-      userRef.get().then((snapshot) => {
-        let currentBalance = 0;
-        if (snapshot.exists()) {
-          currentBalance = parseFloat(snapshot.val().balance) || 0;
-        }
-
-        userRef.update({
-          balance: currentBalance + amount
-        }).then(() => {
-          document.getElementById("statusMsg").style.color = "green";
-          document.getElementById("statusMsg").textContent = "✅ Cloud Update Successful!";
-          // Clear inputs
-          document.getElementById("quickAmount").value = "";
-          document.getElementById("targetMobile").value = "";
-          document.getElementById("targetAmount").value = "";
-        });
-      });
+    function logout() {
+      localStorage.removeItem("isAdmin");
+      window.location.href = "admin-login.html";
     }
+
+    loadAdminLogs();
   </script>
 </body>
 </html>
