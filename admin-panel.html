@@ -1,190 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Cloud Balance Manager</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <!-- Firebase Core SDK -->
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
-
-  <style>
-    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; }
-    body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-    .container { max-width: 900px; margin: auto; }
-    .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
-    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; }
-    .btn-logout { background: var(--danger); margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; }
-    .amt-plus { color: var(--success); font-weight: bold; }
-    .amt-minus { color: var(--danger); font-weight: bold; }
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
-    .bg-add { background: var(--success); }
-    .bg-deduct { background: var(--danger); }
-    a { text-decoration: none; color: white; }
-  </style>
+  <meta charset="UTF-8">
+  <title>Admin Panel - Review4Pay</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-
-  <div class="container">
-    <button style="width: auto; background: #2563eb; margin-bottom: 15px;">
-        <a href="dashboard.html"><i class="fas fa-plane"></i> Data Center - Check</a>
-    </button>
-
-    <h2><i class="fas fa-user-shield"></i> Admin Control Panel (Cloud Mode)</h2>
-    
-    <div class="card">
-      <h3><i class="fas fa-coins"></i> Add / Deduct Balance</h3>
-      <input type="text" id="targetMobile" placeholder="User Mobile Number (e.g. 98XXXXXXXX)">
-      <input type="number" id="targetAmount" placeholder="Amount (e.g. 500 to add, -200 to deduct)">
-      <button onclick="updateAndLogBalance()">Update Cloud Balance Now</button>
-      <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
+<body class="bg-gray-900 text-gray-100">
+  <div class="p-6 max-w-5xl mx-auto">
+    <div class="flex justify-between items-center mb-10">
+      <h1 class="text-3xl font-bold text-blue-500">Master Admin</h1>
+      <button onclick="loadUsers()" class="bg-gray-700 hover:bg-gray-600 px-6 py-2 rounded-lg transition">Refresh List</button>
     </div>
 
-    <div class="card">
-      <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
-      <div id="historyTableContainer">
-        <table>
-          <thead>
-            <tr>
-              <th>Mobile Number</th>
-              <th>Action</th>
-              <th>Amount</th>
-              <th>Date & Time</th>
-            </tr>
-          </thead>
-          <tbody id="adminLogBody"></tbody>
-        </table>
-      </div>
-      <button onclick="clearLogs()" style="background:#bdc3c7; font-size:0.8rem; width:auto; margin-top:10px;">Clear History</button>
+    <div class="bg-gray-800 rounded-2xl shadow-2xl border border-gray-700 overflow-hidden">
+      <table class="w-full text-left border-collapse">
+        <thead>
+          <tr class="bg-gray-700 text-gray-400 text-xs uppercase">
+            <th class="p-5">User Information</th>
+            <th class="p-5">Current Balance</th>
+            <th class="p-5">Tasks</th>
+            <th class="p-5">Balance Actions</th>
+          </tr>
+        </thead>
+        <tbody id="user-table">
+          <!-- User rows will load here -->
+        </tbody>
+      </table>
     </div>
-
-    <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
 
   <script>
-    // --- FIREBASE INITIALIZATION ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyCcZSisqL3RIVN91v6GgCUL3RIVN91v6Gg",
-        authDomain: "my-review-9aea1.firebaseapp.com",
-        databaseURL: "https://my-review-9aea1-default-rtdb.firebaseio.com",
-        projectId: "my-review-9aea1",
-        storageBucket: "my-review-9aea1.firebasestorage.app",
-        messagingSenderId: "923523588654",
-        appId: "1:923523588654:web:942ce2a6122d997d64359e"
-    };
+    const BASE_URL = "https://your-infinityfree-link.com/";
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    async function loadUsers() {
+      const res = await fetch(`${BASE_URL}admin_get_all.php`);
+      const users = await res.json();
+      const table = document.getElementById("user-table");
+      table.innerHTML = "";
 
-    // Security check
-    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
-
-    // --- LOGIC: UPDATE CLOUD DATABASE ---
-    function updateAndLogBalance() {
-      const rawMobile = document.getElementById("targetMobile").value.trim();
-      const amount = parseFloat(document.getElementById("targetAmount").value);
-      const status = document.getElementById("statusMsg");
-
-      if(!rawMobile || isNaN(amount)) {
-        alert("Mobile ra Amount dubai halnus!");
-        return;
-      }
-
-      // Clean the mobile number to match database format
-      const mobile = rawMobile.replace("+977", "").replace("+", "").trim();
-      const userRef = db.ref('users/' + mobile);
-
-      status.textContent = "Updating Cloud...";
-      status.style.color = "orange";
-
-      // Fetch current balance from Firebase first
-      userRef.get().then((snapshot) => {
-        let currentBal = 0;
-        if (snapshot.exists() && snapshot.val().balance) {
-            currentBal = parseFloat(snapshot.val().balance);
-        }
-
-        const newBal = currentBal + amount;
-
-        // Update Firebase
-        userRef.update({
-          balance: newBal,
-          lastUpdate: new Date().toLocaleString()
-        }).then(() => {
-          // Log locally for admin history
-          saveLocalLog(mobile, amount);
-          
-          status.style.color = "green";
-          status.textContent = `✅ Success! New Balance for ${mobile}: Rs. ${newBal}`;
-          
-          document.getElementById("targetMobile").value = "";
-          document.getElementById("targetAmount").value = "";
-          loadAdminLogs();
-        });
-      }).catch(err => {
-          alert("Error: Make sure your Firebase Rules are set to true!");
-          status.textContent = "Error connecting to Firebase.";
-          status.style.color = "red";
-      });
-    }
-
-    function saveLocalLog(mobile, amount) {
-      const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-      const newLog = {
-        mobile: mobile,
-        type: amount > 0 ? "ADDED" : "DEDUCTED",
-        amount: Math.abs(amount),
-        time: new Date().toLocaleString()
-      };
-      adminLogs.push(newLog);
-      localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
-    }
-
-    function loadAdminLogs() {
-      const logBody = document.getElementById("adminLogBody");
-      const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-      
-      if(logs.length === 0) {
-        logBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No history found.</td></tr>";
-        return;
-      }
-
-      logBody.innerHTML = "";
-      logs.reverse().forEach(log => {
-        const typeClass = log.type === "ADDED" ? "bg-add" : "bg-deduct";
-        const amtClass = log.type === "ADDED" ? "amt-plus" : "amt-minus";
-        const symbol = log.type === "ADDED" ? "+" : "-";
-        
-        logBody.innerHTML += `
-          <tr>
-            <td>${log.mobile}</td>
-            <td><span class="status-badge ${typeClass}">${log.type}</span></td>
-            <td class="${amtClass}">${symbol} Rs. ${log.amount}</td>
-            <td>${log.time}</td>
+      users.forEach(user => {
+        table.innerHTML += `
+          <tr class="border-b border-gray-700 hover:bg-gray-750 transition">
+            <td class="p-5">
+              <p class="font-bold text-white">${user.name}</p>
+              <p class="text-xs text-gray-500">${user.phone}</p>
+            </td>
+            <td class="p-5 text-xl font-mono text-green-400">Rs. ${user.balance}</td>
+            <td class="p-5 text-gray-400">${user.tasks_completed}/10</td>
+            <td class="p-5">
+              <div class="flex gap-2">
+                <input type="number" id="amt-${user.phone}" placeholder="Amount" class="w-20 p-2 bg-gray-900 border border-gray-600 rounded text-sm">
+                <button onclick="updateBal('${user.phone}', 'add')" class="bg-green-600 hover:bg-green-500 px-3 py-1 rounded text-xs font-bold">ADD</button>
+                <button onclick="updateBal('${user.phone}', 'deduct')" class="bg-red-600 hover:bg-red-500 px-3 py-1 rounded text-xs font-bold">DEDUCT</button>
+              </div>
+            </td>
           </tr>
         `;
       });
     }
 
-    function clearLogs() {
-      if(confirm("Pura transaction history delete garne?")) {
-        localStorage.setItem("adminLogs", "[]");
-        loadAdminLogs();
+    async function updateBal(phone, action) {
+      const input = document.getElementById(`amt-${phone}`);
+      let amount = parseFloat(input.value);
+      if(!amount) return alert("Enter amount");
+
+      if(action === 'deduct') amount = -amount;
+
+      const res = await fetch(`${BASE_URL}admin_adjust_balance.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone, amount })
+      });
+      const result = await res.json();
+      if(result.success) {
+        alert("Success! Balance Updated.");
+        loadUsers();
       }
     }
-
-    function logout() {
-      localStorage.removeItem("isAdmin");
-      window.location.href = "admin-login.html";
-    }
-
-    loadAdminLogs();
+    loadUsers();
   </script>
 </body>
 </html>
