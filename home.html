@@ -12,12 +12,14 @@
       --vip: #8e44ad;
       --accent: #3498db;
     }
+
     body {
       font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
       margin: 0;
       background: #f0f2f5;
       color: #333;
     }
+
     /* Navbar */
     .navbar {
       background: var(--primary);
@@ -31,6 +33,7 @@
       z-index: 1000;
       box-shadow: 0 2px 10px rgba(0,0,0,0.2);
     }
+
     .logo {
       font-size: 1.3rem;
       font-weight: bold;
@@ -38,29 +41,34 @@
       align-items: center;
       gap: 8px;
     }
+
     .nav-links {
       list-style: none;
       display: flex;
       gap: 15px;
       margin: 0;
     }
+
     .nav-links a {
       color: white;
       text-decoration: none;
       font-size: 0.9rem;
       opacity: 0.9;
     }
+
     /* Stats Dashboard */
     .dashboard {
       max-width: 1000px;
       margin: 20px auto;
       padding: 0 15px;
     }
+
     .stats-grid {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
       gap: 15px;
     }
+
     .stat-card {
       background: white;
       padding: 20px;
@@ -68,9 +76,11 @@
       text-align: center;
       box-shadow: 0 4px 6px rgba(0,0,0,0.05);
     }
+
     .stat-card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; }
     .stat-label { display: block; font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
     .stat-value { font-size: 1.2rem; font-weight: bold; display: block; margin-top: 5px; }
+
     .status-badge {
       background: #95a5a6;
       color: white;
@@ -79,6 +89,7 @@
       font-size: 0.7rem;
       vertical-align: middle;
     }
+
     /* Hotel List */
     .hotel-container {
       max-width: 1100px;
@@ -88,6 +99,7 @@
       gap: 20px;
       padding: 15px;
     }
+
     .hotel-card {
       background: white;
       border-radius: 15px;
@@ -95,11 +107,13 @@
       box-shadow: 0 6px 12px rgba(0,0,0,0.08);
       position: relative;
     }
+
     .hotel-card img {
       width: 100%;
       height: 180px;
       object-fit: cover;
     }
+
     .reward-pill {
       position: absolute;
       top: 10px;
@@ -111,8 +125,10 @@
       font-size: 0.8rem;
       font-weight: bold;
     }
+
     .hotel-info { padding: 15px; text-align: center; }
     .hotel-info h3 { margin: 0 0 10px; font-size: 1.1rem; }
+
     .btn-earn {
       background: var(--accent);
       color: white;
@@ -123,6 +139,7 @@
       font-weight: bold;
       width: 100%;
     }
+
     /* Modal */
     #review-modal {
       display: none;
@@ -134,6 +151,7 @@
       z-index: 2000;
       padding: 20px;
     }
+
     .modal-box {
       background: white;
       padding: 25px;
@@ -141,19 +159,24 @@
       width: 100%;
       max-width: 400px;
     }
+
     .modal-box h2 { margin-top: 0; font-size: 1.3rem; }
     .modal-box textarea {
       width: 100%;
-      margin: 15px 0;      padding: 10px;
+      margin: 15px 0;
+      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 8px;
       resize: none;
       box-sizing: border-box;
     }
+
     .btn-submit { background: var(--success); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
     .btn-close { background: #eee; border: none; padding: 8px; margin-top: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+
     /* Responsive Burger */
     .burger { display: none; cursor: pointer; color: white; font-size: 1.5rem; }
+
     @media (max-width: 600px) {
       .burger { display: block; }
       .nav-links { display: none; position: absolute; top: 55px; right: 20px; background: var(--primary); padding: 15px; border-radius: 8px; flex-direction: column; }
@@ -169,8 +192,9 @@
     <ul class="nav-links" id="nav-links">
       <li><a href="home.html">Home</a></li>
       <li><a href="submit.html">Submit</a></li>
+      <li><a href="admin-login.html">Admin</a></li>
       <li><a href="history.html">History</a></li>
-      <li><a href="#" onclick="logout()">Logout</a></li>
+      <li><a href="index.html" onclick="logout()">Logout</a></li>
     </ul>
   </nav>
 
@@ -179,7 +203,7 @@
       <div class="stat-card">
         <i class="fas fa-user-circle"></i>
         <span class="stat-label">Member Name</span>
-        <span class="stat-value"><span id="user-name">Loading...</span> <span id="tier-badge" class="status-badge">Free</span></span>
+        <span class="stat-value"><span id="user-name">Guest</span> <span id="tier-badge" class="status-badge">Free</span></span>
       </div>
       <div class="stat-card">
         <i class="fas fa-wallet"></i>
@@ -200,159 +224,145 @@
     <div class="modal-box">
       <h2 id="m-hotel-name">Hotel Name</h2>
       <p style="font-size: 0.8rem; color: #666;">Step: Confirm 5-star rating & submit review.</p>
+
       <div style="color: #f1c40f; margin-bottom: 10px;">
         <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
       </div>
+
       <input type="text" id="m-user-name" readonly style="background:#f9f9f9; width:100%; border:1px solid #ddd; padding:8px; border-radius:5px; box-sizing:border-box;">
       <textarea id="review-text" rows="3" placeholder="Write a nice comment about the hotel..."></textarea>
+
       <button class="btn-submit" id="submit-btn">Submit & Get Paid</button>
       <button class="btn-close" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 
   <script>
-    // --- API CONFIG ---
-    // STEP 1: Put your actual InfinityFree Link here!
-    const BASE_URL = "https://app.netlify.com/projects/googletaskadsreview/agent-runs/69f8aee57968293edf6dc681"; 
-    const loggedInPhone = localStorage.getItem("loggedInUser");
+  // --- DATA LOAD ---
+  const loggedInPhone = localStorage.getItem("loggedInUser");
+  const allUsers = JSON.parse(localStorage.getItem("users") || "{}");
+  const userData = allUsers[loggedInPhone] || { name: "Guest User", isSubscribed: false };
 
-    let currentBalance = 0;
-    let taskDone = 0;
-    let taskLimit = 10;
-    let rewardPerTask = 65;
-    const FEE = 50;
+  // Rules Logic
+  const IS_VIP = userData.isSubscribed === true;
+  const TASK_LIMIT = IS_VIP ? 14 : 10;
+  const REWARD = IS_VIP ? 70 : 65;
+  const FEE = 50;
 
-    // --- FETCH DATA FROM DATABASE ---
-    async function initUI() {
-      // Check if user is logged in on this domain
-      if (!loggedInPhone) { 
-        console.warn("User not logged in.");
-        document.getElementById("user-name").textContent = "No Session";
-        return; 
-      }
+  // --- FIXED BALANCE LOGIC ---
+  // यहाँ check गरिन्छ कि balance पहिल्यै छ कि छैन। यदि छैन (null) भने मात्र १०० राखिन्छ।
+  let storedBalance = localStorage.getItem("balance");
+  let balance = (storedBalance === null) ? 100 : parseInt(storedBalance);
 
-      try {
-        // Fetch from InfinityFree API
-        const response = await fetch(`${BASE_URL}get_user_data.php?phone=${loggedInPhone}`);
-        
-        if (!response.ok) throw new Error('Server unreachable');
-        
-        const data = await response.json();
+  let taskDone = parseInt(localStorage.getItem("reviewsToday")) || 0;
+  let history = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
 
-        if (data.success) {
-          currentBalance = parseFloat(data.balance);
-          taskDone = parseInt(data.tasks_completed);
-          
-          // VIP Logic
-          const isVip = data.isSubscribed == 1;
-          taskLimit = isVip ? 14 : 10;
-          rewardPerTask = isVip ? 70 : 65;
+  // --- UI SETUP ---
+  function initUI() {
+    document.getElementById("user-name").textContent = userData.name;
+    document.getElementById("m-user-name").value = userData.name;
+    document.getElementById("balance-val").textContent = balance;
+    document.getElementById("done-count").textContent = taskDone;
+    document.getElementById("limit-count").textContent = TASK_LIMIT;
 
-          document.getElementById("user-name").textContent = data.name;
-          document.getElementById("m-user-name").value = data.name;
-          document.getElementById("balance-val").textContent = currentBalance.toFixed(2);
-          document.getElementById("done-count").textContent = taskDone;
-          document.getElementById("limit-count").textContent = taskLimit;
+    if(IS_VIP) {
+      const badge = document.getElementById("tier-badge");
+      badge.textContent = "VIP";
+      badge.style.background = "#8e44ad";
+    }
+  }
 
-          if (isVip) {
-            const badge = document.getElementById("tier-badge");
-            badge.textContent = "VIP";
-            badge.style.background = "#8e44ad";
-          }
-          // Re-render hotels to update the reward display
-          renderHotels();
-        }
-      } catch (err) {
-        console.error("Connection Error:", err.message);
-        document.getElementById("user-name").textContent = "Conn Error";
-      }
+  const relatableHotels = [
+    { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
+    { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
+    { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
+    { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
+    { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
+    { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
+  ];
+
+  function renderHotels() {
+    const list = document.getElementById("hotel-list");
+    list.innerHTML = ""; 
+    for (let i = 0; i < 40; i++) {
+      const data = relatableHotels[i % relatableHotels.length];
+      const hName = `${data.n} #${i + 101}`;
+      const card = document.createElement("div");
+      card.className = "hotel-card";
+      card.innerHTML = `
+        <div class="reward-pill">Rs. ${REWARD}</div>
+        <img src="${data.img}&sig=${i}" alt="hotel">
+        <div class="hotel-info">
+          <h3>${hName}</h3>
+          <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
+        </div>
+      `;
+      list.appendChild(card);
+    }
+  }
+
+  // --- LOGIC ---
+  let activeHotel = "";
+
+  function openReview(name) {
+    activeHotel = name;
+    document.getElementById("m-hotel-name").textContent = name;
+    document.getElementById("review-modal").style.display = "flex";
+  }
+
+  function closeModal() {
+    document.getElementById("review-modal").style.display = "none";
+    document.getElementById("review-text").value = "";
+  }
+
+  document.getElementById("submit-btn").addEventListener("click", () => {
+    const txt = document.getElementById("review-text").value.trim();
+
+    if(txt.length < 10) {
+      alert("Please write a proper review (min 10 characters).");
+      return;
+    }
+    if(history.includes(activeHotel)) {
+      alert("You already completed this task today.");
+      return;
+    }
+    if(taskDone >= TASK_LIMIT) {
+      alert(`Limit reached! Upgrade to VIP for more tasks.`);
+      return;
+    }
+    if(balance < FEE) {
+      alert("Insufficient balance to cover security fee (Rs. 50).");
+      return;
     }
 
-    const relatableHotels = [
-      { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
-      { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
-      { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
-      { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
-      { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
-      { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
-    ];
+    // Calculation
+    balance = (balance - FEE) + REWARD;
+    taskDone++;
+    history.push(activeHotel);
 
-    function renderHotels() {
-      const list = document.getElementById("hotel-list");
-      list.innerHTML = ""; 
-      for (let i = 0; i < 20; i++) {
-        const data = relatableHotels[i % relatableHotels.length];
-        const hName = `${data.n} #${i + 101}`;
-        const card = document.createElement("div");
-        card.className = "hotel-card";
-        card.innerHTML = `
-          <div class="reward-pill">Rs. ${rewardPerTask}</div>
-          <img src="${data.img}&sig=${i}" alt="hotel">
-          <div class="hotel-info">
-            <h3>${hName}</h3>
-            <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
-          </div>
-        `;
-        list.appendChild(card);
-      }
-    }
+    // Save
+    localStorage.setItem("balance", balance);
+    localStorage.setItem("reviewsToday", taskDone);
+    localStorage.setItem("reviewedHotels", JSON.stringify(history));
 
-    let activeHotel = "";
-    function openReview(name) {
-      activeHotel = name;
-      document.getElementById("m-hotel-name").textContent = name;
-      document.getElementById("review-modal").style.display = "flex";
-    }
-
-    function closeModal() {
-      document.getElementById("review-modal").style.display = "none";
-      document.getElementById("review-text").value = "";
-    }
-
-    document.getElementById("submit-btn").addEventListener("click", async () => {
-      const txt = document.getElementById("review-text").value.trim();
-      
-      if(txt.length < 10) { alert("Please write a proper review."); return; }
-      if(taskDone >= taskLimit) { alert("Daily Limit reached!"); return; }
-      if(currentBalance < FEE) { alert("Insufficient balance for fee."); return; }
-
-      try {
-        const response = await fetch(`${BASE_URL}update_task.php`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: loggedInPhone,
-            reward: rewardPerTask,
-            fee: FEE,
-            hotel: activeHotel
-          })
-        });
-
-        const result = await response.json();
-        if (result.success) {
-          alert(`Success! Rs. ${rewardPerTask} added.`);
-          closeModal();
-          initUI(); // Refresh UI to update balance
-        } else {
-          alert(result.message);
-        }
-      } catch (err) {
-        alert("Server error. Check CORS settings on PHP.");
-      }
-    });
-
-    function logout() {
-      localStorage.removeItem("loggedInUser");
-      window.location.href = "login.html";
-    }
-
-    document.getElementById("burger").onclick = () => {
-      document.getElementById("nav-links").classList.toggle("active");
-    };
-
-    // Run initialization
     initUI();
-    renderHotels();
-  </script>
+    alert(`Success! Reward of Rs. ${REWARD} added.`);
+    closeModal();
+  });
+
+  function logout() {
+    localStorage.removeItem("loggedInUser");
+    window.location.href = "login.html";
+  }
+
+  document.getElementById("burger").onclick = () => {
+    document.getElementById("nav-links").classList.toggle("active");
+  };
+
+  // Run initial functions
+  initUI();
+  renderHotels();
+</script>
+
 </body>
 </html>
