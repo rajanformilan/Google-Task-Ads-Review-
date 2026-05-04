@@ -11,10 +11,11 @@
     .container { max-width: 900px; margin: auto; }
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-    
+
     /* Form Styling */
     input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
-    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
+    button:active { opacity: 0.8; }
     .btn-logout { background: var(--danger); margin-top: 20px; }
 
     /* History Table */
@@ -23,18 +24,19 @@
     th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; }
     .amt-plus { color: var(--success); font-weight: bold; }
     .amt-minus { color: var(--danger); font-weight: bold; }
-    
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; }
+
+    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; }
     .bg-add { background: var(--success); }
     .bg-deduct { background: var(--danger); }
+
+    .nav-btn { display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 15px; font-weight: 600; }
   </style>
 </head>
 <body>
-<button class="px-6 py-2.5 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg shadow-lg shadow-blue-500/30 transform transition-all duration-200 active:scale-95 focus:outline-none focus:ring-2 focus:ring-blue-400"><a href="dashboard.html">
-    Data Center - Check🛫
-</a>
-</button>
+
   <div class="container">
+    <a href="dashboard.html" class="nav-btn">Data Center - Check🛫</a>
+
     <h2><i class="fas fa-user-shield"></i> Admin Control Panel</h2>
 
     <div class="card">
@@ -47,7 +49,7 @@
 
     <div class="card">
       <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
-      <div id="historyTableContainer">
+      <div id="historyTableContainer" style="overflow-x: auto;">
         <table>
           <thead>
             <tr>
@@ -58,7 +60,8 @@
             </tr>
           </thead>
           <tbody id="adminLogBody">
-            </tbody>
+            <!-- Logs will appear here -->
+          </tbody>
         </table>
       </div>
       <button onclick="clearLogs()" style="background:#bdc3c7; font-size:0.8rem; width:auto; margin-top:10px;">Clear History</button>
@@ -68,35 +71,54 @@
   </div>
 
   <script>
-    // Security
-    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
+    // Security: Check if admin is logged in
+    if (localStorage.getItem("isAdmin") !== "true") { 
+      window.location.href = "admin-login.html"; 
+    }
 
-    // --- LOGIC: UPDATE & SAVE LOG ---
+    /**
+     * Normalizes phone numbers by removing +977 and spaces 
+     * to ensure database matching works regardless of input format.
+     */
+    function normalizeMobile(num) {
+      return num.replace("+977", "").replace(/\s+/g, "").trim();
+    }
+
     function updateAndLogBalance() {
-      const mobile = document.getElementById("targetMobile").value.trim();
+      const rawMobile = document.getElementById("targetMobile").value.trim();
+      const mobile = normalizeMobile(rawMobile);
       const amount = parseFloat(document.getElementById("targetAmount").value);
       const status = document.getElementById("statusMsg");
 
       if(!mobile || isNaN(amount)) {
-        alert("Mobile ra Amount dubai halnus!");
+        alert("Please enter both a valid Mobile number and Amount!");
         return;
       }
 
+      // Load users database from LocalStorage
       const users = JSON.parse(localStorage.getItem("users") || "{}");
+      
+      // Verify user exists
       if(!users[mobile]) {
-        alert("यो मोबाइल नम्बर भएको युजर भेटिएन!");
+        alert("यो मोबाइल नम्बर भएको युजर भेटिएन! Make sure the number matches the registration format.");
         return;
       }
 
-      // 1. Balance update garne (User side ma)
-      let currentBal = parseInt(localStorage.getItem("balance")) || 0;
+      // 1. UPDATE USER BALANCE
+      // Ensure the user has a balance property, default to 0
+      let currentBal = parseFloat(users[mobile].balance) || 0;
       let newBal = currentBal + amount;
-      localStorage.setItem("balance", newBal);
+      
+      // Update the user object
+      users[mobile].balance = newBal;
+      
+      // Save updated users list back to storage
+      localStorage.setItem("users", JSON.stringify(users));
 
-      // 2. Transaction Log banaune (Admin record ko lagi)
+      // 2. CREATE TRANSACTION LOG
       const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
       const newLog = {
-        name: users[mobile].name,
+        name: users[mobile].name || "Unknown",
         mobile: mobile,
         type: amount > 0 ? "ADDED" : "DEDUCTED",
         amount: Math.abs(amount),
@@ -105,17 +127,18 @@
       adminLogs.push(newLog);
       localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
 
-      // 3. UI Update
+      // 3. UI UPDATES
       status.style.color = "green";
-      status.textContent = `✅ Done! Rs. ${Math.abs(amount)} ${newLog.type} to ${users[mobile].name}`;
-      
+      status.textContent = `✅ Success! Rs. ${Math.abs(amount)} ${newLog.type} to ${users[mobile].name}`;
+
+      // Reset inputs
       document.getElementById("targetMobile").value = "";
       document.getElementById("targetAmount").value = "";
-      
-      loadAdminLogs(); // Table refresh garne
+
+      // Refresh table
+      loadAdminLogs(); 
     }
 
-    // --- LOGIC: DISPLAY LOGS ---
     function loadAdminLogs() {
       const logBody = document.getElementById("adminLogBody");
       const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
@@ -126,7 +149,8 @@
       }
 
       logBody.innerHTML = "";
-      logs.reverse().forEach(log => {
+      // Display logs with the most recent at the top
+      [...logs].reverse().forEach(log => {
         const typeClass = log.type === "ADDED" ? "bg-add" : "bg-deduct";
         const amtClass = log.type === "ADDED" ? "amt-plus" : "amt-minus";
         const symbol = log.type === "ADDED" ? "+" : "-";
@@ -143,7 +167,7 @@
     }
 
     function clearLogs() {
-      if(confirm("Pura transaction history delete garne?")) {
+      if(confirm("Are you sure you want to delete all transaction history?")) {
         localStorage.setItem("adminLogs", "[]");
         loadAdminLogs();
       }
@@ -154,7 +178,7 @@
       window.location.href = "admin-login.html";
     }
 
-    // Initial Load
+    // Initialize the history table on page load
     loadAdminLogs();
   </script>
 </body>
