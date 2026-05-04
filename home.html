@@ -144,8 +144,7 @@
     .modal-box h2 { margin-top: 0; font-size: 1.3rem; }
     .modal-box textarea {
       width: 100%;
-      margin: 15px 0;
-      padding: 10px;
+      margin: 15px 0;      padding: 10px;
       border: 1px solid #ddd;
       border-radius: 8px;
       resize: none;
@@ -213,7 +212,8 @@
 
   <script>
     // --- API CONFIG ---
-    const BASE_URL = "https://your-infinityfree-link.com/"; // तपाईंको InfinityFree को URL यहाँ राख्नुहोस्
+    // STEP 1: Put your actual InfinityFree Link here!
+    const BASE_URL = "https://app.netlify.com/projects/googletaskadsreview/agent-runs/69f8aee57968293edf6dc681"; 
     const loggedInPhone = localStorage.getItem("loggedInUser");
 
     let currentBalance = 0;
@@ -224,10 +224,19 @@
 
     // --- FETCH DATA FROM DATABASE ---
     async function initUI() {
-      if (!loggedInPhone) { window.location.href = "login.html"; return; }
+      // Check if user is logged in on this domain
+      if (!loggedInPhone) { 
+        console.warn("User not logged in.");
+        document.getElementById("user-name").textContent = "No Session";
+        return; 
+      }
 
       try {
+        // Fetch from InfinityFree API
         const response = await fetch(`${BASE_URL}get_user_data.php?phone=${loggedInPhone}`);
+        
+        if (!response.ok) throw new Error('Server unreachable');
+        
         const data = await response.json();
 
         if (data.success) {
@@ -250,9 +259,12 @@
             badge.textContent = "VIP";
             badge.style.background = "#8e44ad";
           }
+          // Re-render hotels to update the reward display
+          renderHotels();
         }
       } catch (err) {
-        console.error("Database connection failed.");
+        console.error("Connection Error:", err.message);
+        document.getElementById("user-name").textContent = "Conn Error";
       }
     }
 
@@ -268,7 +280,7 @@
     function renderHotels() {
       const list = document.getElementById("hotel-list");
       list.innerHTML = ""; 
-      for (let i = 0; i < 40; i++) {
+      for (let i = 0; i < 20; i++) {
         const data = relatableHotels[i % relatableHotels.length];
         const hName = `${data.n} #${i + 101}`;
         const card = document.createElement("div");
@@ -320,12 +332,12 @@
         if (result.success) {
           alert(`Success! Rs. ${rewardPerTask} added.`);
           closeModal();
-          initUI(); // ब्यालेन्स अपडेट गर्न रिफ्रेस गर्ने
+          initUI(); // Refresh UI to update balance
         } else {
           alert(result.message);
         }
       } catch (err) {
-        alert("Server error. Please try again.");
+        alert("Server error. Check CORS settings on PHP.");
       }
     });
 
@@ -338,6 +350,7 @@
       document.getElementById("nav-links").classList.toggle("active");
     };
 
+    // Run initialization
     initUI();
     renderHotels();
   </script>
