@@ -3,8 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Master Control</title>
+  <title>Admin - Realtime Control</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+  <!-- Firebase App (the core Firebase SDK) -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+  <!-- Firebase Realtime Database SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database-compat.js"></script>
+
   <style>
     :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; --purple: #8e44ad; }
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
@@ -13,39 +18,31 @@
     h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
     input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
     button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
-    button:hover { opacity: 0.9; }
     .btn-quick { background: var(--purple); }
-    .btn-logout { background: var(--danger); margin-top: 20px; }
-    
-    /* Table Styling */
     .table-container { overflow-x: auto; margin-top: 15px; }
     table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    th { background: #f8f9fa; color: #7f8c8d; }
     .balance-tag { font-weight: bold; color: var(--success); }
-    .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; }
-    .bg-add { background: var(--success); }
-    .bg-deduct { background: var(--danger); }
   </style>
 </head>
 <body>
   <div class="container">
-    <h2><i class="fas fa-user-shield"></i> Admin Master Panel</h2>
+    <h2><i class="fas fa-user-shield"></i> Admin Master Panel (Cloud)</h2>
 
-    <!-- 1. USER DIRECTORY (NEW FEATURE) -->
+    <!-- 1. LIVE USER DIRECTORY -->
     <div class="card">
-      <h3><i class="fas fa-users"></i> Registered Users & Balances</h3>
+      <h3><i class="fas fa-users"></i> Realtime User Balances</h3>
       <div class="table-container">
         <table>
           <thead>
             <tr>
               <th>User Name</th>
               <th>Mobile Number</th>
-              <th>Current Balance</th>
+              <th>Cloud Balance</th>
             </tr>
           </thead>
           <tbody id="userTableBody">
-            <!-- User list will appear here -->
+            <tr><td colspan="3" style="text-align:center;">Connecting to database...</td></tr>
           </tbody>
         </table>
       </div>
@@ -53,112 +50,100 @@
 
     <!-- 2. QUICK FIX SECTION -->
     <div class="card">
-      <h3><i class="fas fa-bolt"></i> Quick Fix (+9779824235220)</h3>
-      <input type="number" id="quickAmount" placeholder="Enter amount to add/deduct">
+      <h3><i class="fas fa-bolt"></i> Quick Update (+9779824235220)</h3>
+      <input type="number" id="quickAmount" placeholder="Amount to add (e.g. 350)">
       <button class="btn-quick" onclick="quickUpdate('+9779824235220')">Update 9824235220 Now</button>
     </div>
 
-    <!-- 3. STANDARD BALANCE UPDATER -->
+    <!-- 3. STANDARD UPDATER -->
     <div class="card">
-      <h3><i class="fas fa-coins"></i> Update Any User Balance</h3>
+      <h3><i class="fas fa-coins"></i> Manual Update</h3>
       <input type="text" id="targetMobile" placeholder="Enter Mobile Number">
-      <input type="number" id="targetAmount" placeholder="Enter Amount (e.g., 100 or -100)">
-      <button onclick="updateAndLogBalance()">Update Balance</button>
+      <input type="number" id="targetAmount" placeholder="Amount">
+      <button onclick="updateBalance()">Update Balance</button>
       <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
     </div>
-
-    <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
 
   <script>
-    // Security check
-    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
+    // 1. YOUR FIREBASE CONFIGURATION
+    // Replace these with your actual Firebase project details
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT.appspot.com",
+      messagingSenderId: "YOUR_ID",
+      appId: "YOUR_APP_ID"
+    };
 
-    function normalizeMobile(num) {
-      return num.replace("+977", "").replace(/\s+/g, "").trim();
-    }
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-    // --- NEW: Load User Directory ---
-    function loadUserDirectory() {
+    // 2. READ USERS IN REALTIME
+    db.ref('users').on('value', (snapshot) => {
+      const users = snapshot.val();
       const userTableBody = document.getElementById("userTableBody");
-      const users = JSON.parse(localStorage.getItem("users") || "{}");
-      
-      const userKeys = Object.keys(users);
-      if (userKeys.length === 0) {
-        userTableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No users found in database.</td></tr>";
+      userTableBody.innerHTML = "";
+
+      if (!users) {
+        userTableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No users in cloud database.</td></tr>";
         return;
       }
 
-      userTableBody.innerHTML = "";
-      userKeys.forEach(key => {
+      Object.keys(users).forEach(key => {
         const user = users[key];
+        // Ensure we display correctly even if key is missing +977
+        const displayKey = key.startsWith('9') ? '+977' + key : key;
         userTableBody.innerHTML += `
           <tr>
-            <td><strong>${user.name || 'N/A'}</strong></td>
-            <td>${key}</td>
+            <td><strong>${user.name || 'User'}</strong></td>
+            <td>${displayKey}</td>
             <td class="balance-tag">Rs. ${user.balance || 0}</td>
           </tr>
         `;
       });
-    }
+    });
 
-    function quickUpdate(specificMobile) {
+    // 3. UPDATE LOGIC
+    function quickUpdate(mobile) {
       const amount = parseFloat(document.getElementById("quickAmount").value);
-      if(isNaN(amount)) return alert("Please enter a valid amount!");
-      executeBalanceUpdate(specificMobile, amount);
-      document.getElementById("quickAmount").value = "";
+      if(isNaN(amount)) return alert("Enter amount");
+      applyUpdate(mobile, amount);
     }
 
-    function updateAndLogBalance() {
-      const rawMobile = document.getElementById("targetMobile").value.trim();
+    function updateBalance() {
+      const mobile = document.getElementById("targetMobile").value.trim();
       const amount = parseFloat(document.getElementById("targetAmount").value);
-      const mobile = normalizeMobile(rawMobile);
-
-      const users = JSON.parse(localStorage.getItem("users") || "{}");
-      // Dual-check for key format
-      let userKey = users[mobile] ? mobile : (users["+977" + mobile] ? "+977" + mobile : null);
-
-      if(!userKey) {
-          // If user doesn't exist, use the input format to create a placeholder
-          userKey = rawMobile.includes("+977") ? rawMobile : "+977" + mobile;
-      }
-      
-      executeBalanceUpdate(userKey, amount);
-      document.getElementById("targetMobile").value = "";
-      document.getElementById("targetAmount").value = "";
+      if(!mobile || isNaN(amount)) return alert("Fill all fields");
+      applyUpdate(mobile, amount);
     }
 
-    function executeBalanceUpdate(userKey, amount) {
-      const users = JSON.parse(localStorage.getItem("users") || "{}");
-      
-      if(!users[userKey]) {
-          users[userKey] = { name: "New User", balance: 0 };
-      }
+    function applyUpdate(mobile, amount) {
+      // Standardize the key to remove +977 for the database key
+      const cleanKey = mobile.replace("+977", "").trim();
+      const userRef = db.ref('users/' + cleanKey);
 
-      users[userKey].balance = (parseFloat(users[userKey].balance) || 0) + amount;
-      localStorage.setItem("users", JSON.stringify(users));
+      userRef.get().then((snapshot) => {
+        let currentBalance = 0;
+        if (snapshot.exists()) {
+          currentBalance = parseFloat(snapshot.val().balance) || 0;
+        }
 
-      // Log transaction
-      const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-      adminLogs.push({
-        name: users[userKey].name,
-        mobile: userKey,
-        type: amount > 0 ? "ADDED" : "DEDUCTED",
-        amount: Math.abs(amount),
-        time: new Date().toLocaleString()
+        userRef.update({
+          balance: currentBalance + amount
+        }).then(() => {
+          document.getElementById("statusMsg").style.color = "green";
+          document.getElementById("statusMsg").textContent = "✅ Cloud Update Successful!";
+          // Clear inputs
+          document.getElementById("quickAmount").value = "";
+          document.getElementById("targetMobile").value = "";
+          document.getElementById("targetAmount").value = "";
+        });
       });
-      localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
-
-      document.getElementById("statusMsg").textContent = `✅ Success! Updated ${userKey}`;
-      
-      // Refresh both tables
-      loadUserDirectory();
     }
-
-    function logout() { localStorage.removeItem("isAdmin"); window.location.href = "admin-login.html"; }
-
-    // Initialize data on load
-    loadUserDirectory();
   </script>
 </body>
 </html>
