@@ -6,31 +6,172 @@
   <title>Review4Pay - Earn Daily</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    /* ... (Keep your existing CSS styles here) ... */
-    :root { --primary: #2c3e50; --success: #27ae60; --vip: #8e44ad; --accent: #3498db; }
-    body { font-family: 'Segoe UI', Roboto, sans-serif; margin: 0; background: #f0f2f5; }
-    .navbar { background: var(--primary); color: white; padding: 12px 20px; display: flex; justify-content: space-between; position: sticky; top: 0; z-index: 1000; }
-    .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; max-width: 1000px; margin: 20px auto; padding: 0 15px; }
-    .stat-card { background: white; padding: 20px; border-radius: 12px; text-align: center; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
-    .hotel-container { max-width: 1100px; margin: 20px auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 20px; padding: 15px; }
-    .hotel-card { background: white; border-radius: 15px; overflow: hidden; box-shadow: 0 6px 12px rgba(0,0,0,0.08); position: relative; }
-    .hotel-card img { width: 100%; height: 180px; object-fit: cover; }
-    .reward-pill { position: absolute; top: 10px; left: 10px; background: var(--success); color: white; padding: 5px 10px; border-radius: 20px; font-weight: bold; }
+    :root {
+      --primary: #2c3e50;
+      --success: #27ae60;
+      --vip: #8e44ad;
+      --accent: #3498db;
+    }
+    body {
+      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      margin: 0;
+      background: #f0f2f5;
+      color: #333;
+    }
+    /* Navbar */
+    .navbar {
+      background: var(--primary);
+      color: white;
+      padding: 12px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+    }
+    .logo {
+      font-size: 1.3rem;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .nav-links {
+      list-style: none;
+      display: flex;
+      gap: 15px;
+      margin: 0;
+    }
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+    /* Stats Dashboard */
+    .dashboard {
+      max-width: 1000px;
+      margin: 20px auto;
+      padding: 0 15px;
+    }
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+    }
+    .stat-card {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+    }
+    .stat-card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; }
+    .stat-label { display: block; font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
+    .stat-value { font-size: 1.2rem; font-weight: bold; display: block; margin-top: 5px; }
+    .status-badge {
+      background: #95a5a6;
+      color: white;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 0.7rem;
+      vertical-align: middle;
+    }
+    /* Hotel List */
+    .hotel-container {
+      max-width: 1100px;
+      margin: 20px auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 20px;
+      padding: 15px;
+    }
+    .hotel-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
+      position: relative;
+    }
+    .hotel-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+    .reward-pill {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      background: var(--success);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
     .hotel-info { padding: 15px; text-align: center; }
-    .btn-earn { background: var(--accent); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; width: 100%; }
-    #review-modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); justify-content: center; align-items: center; z-index: 2000; }
-    .modal-box { background: white; padding: 25px; border-radius: 15px; width: 90%; max-width: 400px; }
-    .btn-submit { background: var(--success); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+    .hotel-info h3 { margin: 0 0 10px; font-size: 1.1rem; }
+    .btn-earn {
+      background: var(--accent);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+      width: 100%;
+    }
+    /* Modal */
+    #review-modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      padding: 20px;
+    }
+    .modal-box {
+      background: white;
+      padding: 25px;
+      border-radius: 15px;
+      width: 100%;
+      max-width: 400px;
+    }
+    .modal-box h2 { margin-top: 0; font-size: 1.3rem; }
+    .modal-box textarea {
+      width: 100%;
+      margin: 15px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      resize: none;
+      box-sizing: border-box;
+    }
+    .btn-submit { background: var(--success); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
+    .btn-close { background: #eee; border: none; padding: 8px; margin-top: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
+    /* Responsive Burger */
+    .burger { display: none; cursor: pointer; color: white; font-size: 1.5rem; }
+    @media (max-width: 600px) {
+      .burger { display: block; }
+      .nav-links { display: none; position: absolute; top: 55px; right: 20px; background: var(--primary); padding: 15px; border-radius: 8px; flex-direction: column; }
+      .nav-links.active { display: flex; }
+    }
   </style>
 </head>
 <body>
 
   <nav class="navbar">
     <div class="logo"><i class="fas fa-coins"></i> Review4Pay</div>
-    <ul class="nav-links">
+    <div class="burger" id="burger"><i class="fas fa-bars"></i></div>
+    <ul class="nav-links" id="nav-links">
       <li><a href="home.html">Home</a></li>
+      <li><a href="submit.html">Submit</a></li>
       <li><a href="history.html">History</a></li>
-      <li><button onclick="logout()" style="background:none; border:none; color:white; cursor:pointer;">Logout</button></li>
+      <li><a href="#" onclick="logout()">Logout</a></li>
     </ul>
   </nav>
 
@@ -39,7 +180,7 @@
       <div class="stat-card">
         <i class="fas fa-user-circle"></i>
         <span class="stat-label">Member Name</span>
-        <span class="stat-value"><span id="user-name">Loading...</span></span>
+        <span class="stat-value"><span id="user-name">Loading...</span> <span id="tier-badge" class="status-badge">Free</span></span>
       </div>
       <div class="stat-card">
         <i class="fas fa-wallet"></i>
@@ -49,71 +190,104 @@
       <div class="stat-card">
         <i class="fas fa-tasks"></i>
         <span class="stat-label">Today's Tasks</span>
-        <span class="stat-value"><span id="done-count">0</span> / 10</span>
+        <span class="stat-value"><span id="done-count">0</span> / <span id="limit-count">10</span></span>
       </div>
     </div>
   </div>
 
   <div class="hotel-container" id="hotel-list"></div>
 
-  <!-- Review Modal -->
   <div id="review-modal">
     <div class="modal-box">
       <h2 id="m-hotel-name">Hotel Name</h2>
-      <textarea id="review-text" rows="3" placeholder="Write your review..."></textarea>
+      <p style="font-size: 0.8rem; color: #666;">Step: Confirm 5-star rating & submit review.</p>
+      <div style="color: #f1c40f; margin-bottom: 10px;">
+        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+      </div>
+      <input type="text" id="m-user-name" readonly style="background:#f9f9f9; width:100%; border:1px solid #ddd; padding:8px; border-radius:5px; box-sizing:border-box;">
+      <textarea id="review-text" rows="3" placeholder="Write a nice comment about the hotel..."></textarea>
       <button class="btn-submit" id="submit-btn">Submit & Get Paid</button>
-      <button onclick="closeModal()" style="width:100%; margin-top:10px;">Cancel</button>
+      <button class="btn-close" onclick="closeModal()">Cancel</button>
     </div>
   </div>
 
   <script>
-    const userPhone = localStorage.getItem("loggedInUser");
+    // --- API CONFIG ---
+    const BASE_URL = "https://your-infinityfree-link.com/"; // तपाईंको InfinityFree को URL यहाँ राख्नुहोस्
+    const loggedInPhone = localStorage.getItem("loggedInUser");
 
-    // 1. FETCH DATA FROM DATABASE ON LOAD
-    async function loadUserData() {
-        if (!userPhone) { window.location.href = "login.html"; return; }
+    let currentBalance = 0;
+    let taskDone = 0;
+    let taskLimit = 10;
+    let rewardPerTask = 65;
+    const FEE = 50;
 
-        try {
-            const response = await fetch(`get_user_data.php?phone=${userPhone}`);
-            const data = await response.json();
+    // --- FETCH DATA FROM DATABASE ---
+    async function initUI() {
+      if (!loggedInPhone) { window.location.href = "login.html"; return; }
 
-            if (data.success) {
-                document.getElementById("user-name").textContent = data.name;
-                document.getElementById("balance-val").textContent = data.balance;
-                document.getElementById("done-count").textContent = data.tasks_completed;
-            }
-        } catch (error) {
-            console.error("Error loading data:", error);
+      try {
+        const response = await fetch(`${BASE_URL}get_user_data.php?phone=${loggedInPhone}`);
+        const data = await response.json();
+
+        if (data.success) {
+          currentBalance = parseFloat(data.balance);
+          taskDone = parseInt(data.tasks_completed);
+          
+          // VIP Logic
+          const isVip = data.isSubscribed == 1;
+          taskLimit = isVip ? 14 : 10;
+          rewardPerTask = isVip ? 70 : 65;
+
+          document.getElementById("user-name").textContent = data.name;
+          document.getElementById("m-user-name").value = data.name;
+          document.getElementById("balance-val").textContent = currentBalance.toFixed(2);
+          document.getElementById("done-count").textContent = taskDone;
+          document.getElementById("limit-count").textContent = taskLimit;
+
+          if (isVip) {
+            const badge = document.getElementById("tier-badge");
+            badge.textContent = "VIP";
+            badge.style.background = "#8e44ad";
+          }
         }
+      } catch (err) {
+        console.error("Database connection failed.");
+      }
     }
 
-    // 2. SUBMIT TASK & UPDATE DATABASE
-    document.getElementById("submit-btn").addEventListener("click", async () => {
-        const review = document.getElementById("review-text").value;
-        if (review.length < 10) { alert("Review too short!"); return; }
+    const relatableHotels = [
+      { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
+      { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
+      { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
+      { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
+      { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
+      { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
+    ];
 
-        try {
-            const response = await fetch('update_task.php', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: userPhone, reward: 65, fee: 50 })
-            });
-            const result = await response.json();
+    function renderHotels() {
+      const list = document.getElementById("hotel-list");
+      list.innerHTML = ""; 
+      for (let i = 0; i < 40; i++) {
+        const data = relatableHotels[i % relatableHotels.length];
+        const hName = `${data.n} #${i + 101}`;
+        const card = document.createElement("div");
+        card.className = "hotel-card";
+        card.innerHTML = `
+          <div class="reward-pill">Rs. ${rewardPerTask}</div>
+          <img src="${data.img}&sig=${i}" alt="hotel">
+          <div class="hotel-info">
+            <h3>${hName}</h3>
+            <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
+          </div>
+        `;
+        list.appendChild(card);
+      }
+    }
 
-            if (result.success) {
-                alert("Success! Your balance was updated.");
-                closeModal();
-                loadUserData(); // Refresh stats from server
-            } else {
-                alert(result.message);
-            }
-        } catch (error) {
-            alert("Database connection failed.");
-        }
-    });
-
-    // --- UI Helper Functions ---
+    let activeHotel = "";
     function openReview(name) {
+      activeHotel = name;
       document.getElementById("m-hotel-name").textContent = name;
       document.getElementById("review-modal").style.display = "flex";
     }
@@ -123,26 +297,49 @@
       document.getElementById("review-text").value = "";
     }
 
+    document.getElementById("submit-btn").addEventListener("click", async () => {
+      const txt = document.getElementById("review-text").value.trim();
+      
+      if(txt.length < 10) { alert("Please write a proper review."); return; }
+      if(taskDone >= taskLimit) { alert("Daily Limit reached!"); return; }
+      if(currentBalance < FEE) { alert("Insufficient balance for fee."); return; }
+
+      try {
+        const response = await fetch(`${BASE_URL}update_task.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            phone: loggedInPhone,
+            reward: rewardPerTask,
+            fee: FEE,
+            hotel: activeHotel
+          })
+        });
+
+        const result = await response.json();
+        if (result.success) {
+          alert(`Success! Rs. ${rewardPerTask} added.`);
+          closeModal();
+          initUI(); // ब्यालेन्स अपडेट गर्न रिफ्रेस गर्ने
+        } else {
+          alert(result.message);
+        }
+      } catch (err) {
+        alert("Server error. Please try again.");
+      }
+    });
+
     function logout() {
       localStorage.removeItem("loggedInUser");
       window.location.href = "login.html";
     }
 
-    // Render Hotels (Placeholder loop)
-    const list = document.getElementById("hotel-list");
-    for(let i=1; i<=10; i++) {
-        list.innerHTML += `
-            <div class="hotel-card">
-                <div class="reward-pill">Rs. 65</div>
-                <img src="https://images.unsplash.com/photo-1566073771259-6a8506099945?w=500">
-                <div class="hotel-info">
-                    <h3>Premium Hotel #${i}</h3>
-                    <button class="btn-earn" onclick="openReview('Hotel #${i}')">Start Task</button>
-                </div>
-            </div>`;
-    }
+    document.getElementById("burger").onclick = () => {
+      document.getElementById("nav-links").classList.toggle("active");
+    };
 
-    loadUserData();
+    initUI();
+    renderHotels();
   </script>
 </body>
 </html>
