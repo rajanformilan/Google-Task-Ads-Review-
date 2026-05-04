@@ -3,22 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Balance Manager</title>
+  <title>Admin - Master Control</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
-    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; }
+    :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; --purple: #8e44ad; }
     body { font-family: 'Segoe UI', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; }
-    .container { max-width: 900px; margin: auto; }
+    .container { max-width: 950px; margin: auto; }
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
-    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
+    h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0; }
     input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
-    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
-    .btn-quick { background: #8e44ad; margin-bottom: 10px; }
+    button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
+    button:hover { opacity: 0.9; }
+    .btn-quick { background: var(--purple); }
     .btn-logout { background: var(--danger); margin-top: 20px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    
+    /* Table Styling */
+    .table-container { overflow-x: auto; margin-top: 15px; }
+    table { width: 100%; border-collapse: collapse; }
     th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    .amt-plus { color: var(--success); font-weight: bold; }
-    .amt-minus { color: var(--danger); font-weight: bold; }
+    th { background: #f8f9fa; color: #7f8c8d; }
+    .balance-tag { font-weight: bold; color: var(--success); }
     .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; }
     .bg-add { background: var(--success); }
     .bg-deduct { background: var(--danger); }
@@ -26,52 +30,83 @@
 </head>
 <body>
   <div class="container">
-    <h2><i class="fas fa-user-shield"></i> Admin Control Panel</h2>
-    
+    <h2><i class="fas fa-user-shield"></i> Admin Master Panel</h2>
+
+    <!-- 1. USER DIRECTORY (NEW FEATURE) -->
     <div class="card">
-      <h3><i class="fas fa-bolt"></i> Quick Fix for +9779824235220</h3>
-      <input type="number" id="quickAmount" placeholder="Amount for 9824235220">
-      <button class="btn-quick" onclick="quickUpdate('+9779824235220')">Update This Specific User Now</button>
+      <h3><i class="fas fa-users"></i> Registered Users & Balances</h3>
+      <div class="table-container">
+        <table>
+          <thead>
+            <tr>
+              <th>User Name</th>
+              <th>Mobile Number</th>
+              <th>Current Balance</th>
+            </tr>
+          </thead>
+          <tbody id="userTableBody">
+            <!-- User list will appear here -->
+          </tbody>
+        </table>
+      </div>
     </div>
 
+    <!-- 2. QUICK FIX SECTION -->
     <div class="card">
-      <h3><i class="fas fa-coins"></i> Standard Add / Deduct</h3>
-      <input type="text" id="targetMobile" placeholder="User Mobile Number">
-      <input type="number" id="targetAmount" placeholder="Amount">
-      <button onclick="updateAndLogBalance()">Update Balance Now</button>
+      <h3><i class="fas fa-bolt"></i> Quick Fix (+9779824235220)</h3>
+      <input type="number" id="quickAmount" placeholder="Enter amount to add/deduct">
+      <button class="btn-quick" onclick="quickUpdate('+9779824235220')">Update 9824235220 Now</button>
+    </div>
+
+    <!-- 3. STANDARD BALANCE UPDATER -->
+    <div class="card">
+      <h3><i class="fas fa-coins"></i> Update Any User Balance</h3>
+      <input type="text" id="targetMobile" placeholder="Enter Mobile Number">
+      <input type="number" id="targetAmount" placeholder="Enter Amount (e.g., 100 or -100)">
+      <button onclick="updateAndLogBalance()">Update Balance</button>
       <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
-    </div>
-
-    <div class="card">
-      <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
-      <table>
-        <thead>
-          <tr>
-            <th>User / Mobile</th>
-            <th>Action</th>
-            <th>Amount</th>
-            <th>Date & Time</th>
-          </tr>
-        </thead>
-        <tbody id="adminLogBody"></tbody>
-      </table>
     </div>
 
     <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
 
   <script>
+    // Security check
     if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
 
     function normalizeMobile(num) {
       return num.replace("+977", "").replace(/\s+/g, "").trim();
     }
 
-    // Special function just for your current priority
+    // --- NEW: Load User Directory ---
+    function loadUserDirectory() {
+      const userTableBody = document.getElementById("userTableBody");
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+      
+      const userKeys = Object.keys(users);
+      if (userKeys.length === 0) {
+        userTableBody.innerHTML = "<tr><td colspan='3' style='text-align:center;'>No users found in database.</td></tr>";
+        return;
+      }
+
+      userTableBody.innerHTML = "";
+      userKeys.forEach(key => {
+        const user = users[key];
+        userTableBody.innerHTML += `
+          <tr>
+            <td><strong>${user.name || 'N/A'}</strong></td>
+            <td>${key}</td>
+            <td class="balance-tag">Rs. ${user.balance || 0}</td>
+          </tr>
+        `;
+      });
+    }
+
     function quickUpdate(specificMobile) {
       const amount = parseFloat(document.getElementById("quickAmount").value);
-      if(isNaN(amount)) return alert("Enter an amount!");
+      if(isNaN(amount)) return alert("Please enter a valid amount!");
       executeBalanceUpdate(specificMobile, amount);
+      document.getElementById("quickAmount").value = "";
     }
 
     function updateAndLogBalance() {
@@ -80,24 +115,30 @@
       const mobile = normalizeMobile(rawMobile);
 
       const users = JSON.parse(localStorage.getItem("users") || "{}");
+      // Dual-check for key format
       let userKey = users[mobile] ? mobile : (users["+977" + mobile] ? "+977" + mobile : null);
 
-      if(!userKey) return alert("यो मोबाइल नम्बर भएको युजर भेटिएन!");
+      if(!userKey) {
+          // If user doesn't exist, use the input format to create a placeholder
+          userKey = rawMobile.includes("+977") ? rawMobile : "+977" + mobile;
+      }
+      
       executeBalanceUpdate(userKey, amount);
+      document.getElementById("targetMobile").value = "";
+      document.getElementById("targetAmount").value = "";
     }
 
     function executeBalanceUpdate(userKey, amount) {
       const users = JSON.parse(localStorage.getItem("users") || "{}");
       
-      // Ensure user exists in database before updating
       if(!users[userKey]) {
-          // If the key strictly doesn't exist, we create a placeholder so the balance can be added
-          users[userKey] = { name: "User " + userKey, balance: 0 };
+          users[userKey] = { name: "New User", balance: 0 };
       }
 
       users[userKey].balance = (parseFloat(users[userKey].balance) || 0) + amount;
       localStorage.setItem("users", JSON.stringify(users));
 
+      // Log transaction
       const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
       adminLogs.push({
         name: users[userKey].name,
@@ -108,26 +149,16 @@
       });
       localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
 
-      document.getElementById("statusMsg").textContent = `✅ Updated ${userKey}`;
-      loadAdminLogs();
-    }
-
-    function loadAdminLogs() {
-      const logBody = document.getElementById("adminLogBody");
-      const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-      logBody.innerHTML = logs.reverse().map(log => `
-        <tr>
-          <td><strong>${log.name}</strong><br><small>${log.mobile}</small></td>
-          <td><span class="status-badge ${log.type === 'ADDED' ? 'bg-add' : 'bg-deduct'}">${log.type}</span></td>
-          <td class="${log.type === 'ADDED' ? 'amt-plus' : 'amt-minus'}">Rs. ${log.amount}</td>
-          <td>${log.time}</td>
-        </tr>
-      `).join('');
+      document.getElementById("statusMsg").textContent = `✅ Success! Updated ${userKey}`;
+      
+      // Refresh both tables
+      loadUserDirectory();
     }
 
     function logout() { localStorage.removeItem("isAdmin"); window.location.href = "admin-login.html"; }
 
-    loadAdminLogs();
+    // Initialize data on load
+    loadUserDirectory();
   </script>
 </body>
 </html>
