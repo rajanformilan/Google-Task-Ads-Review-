@@ -4,127 +4,83 @@
   <meta charset="UTF-8" />
   <title>Submit Request - Review4Pay</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    /* ... (Keep your existing CSS styles) ... */
-    body { font-family: Arial, sans-serif; max-width: 360px; margin: 40px auto; padding: 20px; background: #f4f7f6; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
-    h2 { text-align: center; color: #333; margin-bottom: 20px; }
-    .balance { background: #5c2d91; color: white; text-align: center; padding: 15px; border-radius: 8px; font-weight: bold; font-size: 1.2rem; margin-bottom: 20px; }
-    select, input, button { width: 100%; padding: 12px; margin: 10px 0; font-size: 16px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; }
-    #qr-box { display: none; background: #fff; border: 2px dashed #5c2d91; padding: 10px; text-align: center; border-radius: 8px; font-size: 0.9rem; margin-bottom: 10px; }
-    button { background-color: #3f51b5; color: white; border: none; font-weight: bold; cursor: pointer; transition: 0.3s; }
-    .email-btn { display: block; background: #ff9800; color: white; text-decoration: none; padding: 12px; border-radius: 8px; text-align: center; margin-top: 10px; }
-    .msg { text-align: center; margin-top: 15px; padding: 10px; border-radius: 6px; font-weight: bold; display: none; }
-  </style>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
+<body class="bg-slate-50 p-4">
+  <div class="max-w-md mx-auto bg-white p-6 rounded-2xl shadow-xl mt-10">
+    <h2 class="text-2xl font-bold text-center text-slate-800 mb-6">Request Funds</h2>
+    
+    <div class="bg-indigo-700 text-white p-5 rounded-xl text-center mb-6 shadow-inner">
+      <p class="text-xs opacity-80 uppercase">Available Balance</p>
+      <p class="text-2xl font-bold">Rs. <span id="balance">0.00</span></p>
+    </div>
 
-  <h2>Submit Request</h2>
-  <!-- The balance now loads from the server -->
-  <div class="balance">Your Balance: Rs <span id="balance">Loading...</span></div>
+    <label class="block text-sm font-semibold mb-1">Request Type</label>
+    <select id="type" onchange="toggleQR()" class="w-full p-3 bg-gray-50 border rounded-lg mb-4 focus:ring-2 focus:ring-indigo-500">
+      <option value="Withdraw">💸 Withdraw (10% Tax)</option>
+      <option value="Recharge">🔋 Recharge (Khalti/Bank)</option>
+    </select>
 
-  <label for="type">Request Type:</label>
-  <select id="type" onchange="toggleQR()">
-    <option value="Withdraw">💸 Withdraw (10% Tax)</option>
-    <option value="Recharge">🔋 Recharge (Khalti/Bank)</option>
-  </select>
+    <div id="qr-box" class="hidden bg-yellow-50 border-2 border-dashed border-yellow-400 p-4 rounded-lg mb-4 text-sm text-yellow-800">
+      <strong>Admin Details:</strong><br>
+      Khalti: 9819210050 | Bank: 05410017510742 <br>Rajan Kandel<br>Nabil Bank Limited
+    </div>
 
-  <div id="qr-box">
-    <strong>Admin Payment Details:</strong><br>
-    Receiver's name: Rajan Kandel<br>
-    Khalti: 9819210050<br>
-    Nabil Bank: 05410017510742
+    <input type="text" id="method" placeholder="Payment Method (e.g. eSewa)" class="w-full p-3 border rounded-lg mb-4">
+    <input type="number" id="amount" placeholder="Amount (Min. 1000)" class="w-full p-3 border rounded-lg mb-4">
+    <input type="tel" id="number" placeholder="Your Wallet ID/Number" class="w-full p-3 border rounded-lg mb-6">
+
+    <button onclick="submitRequest()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white p-4 rounded-xl font-bold transition shadow-lg">
+      Submit & Notify Admin
+    </button>
+
+    <div id="msgBox" class="mt-4 hidden p-4 rounded-lg text-center font-semibold"></div>
   </div>
 
-  <input type="text" id="method" placeholder="Wallet Name (e.g. eSewa, Khalti)" />
-  <input type="number" id="amount" placeholder="Enter Amount (Rs)" />
-  <input type="tel" id="number" placeholder="Enter Your ID/Number" />
-
-  <button id="main-submit-btn" onclick="submitRequest()">Submit & Generate Email</button>
-
-  <div class="msg" id="msgBox"></div>
-
   <script>
-    const ADMIN_EMAIL = 'milankandel584@gmail.com';
+    const BASE_URL = "https://your-infinityfree-link.com/";
     const userPhone = localStorage.getItem("loggedInUser");
-    let currentServerBalance = 0;
 
-    // 1. Load Real Balance from Server
-    async function fetchBalance() {
-      if (!userPhone) { window.location.href = "login.html"; return; }
-      
-      try {
-        const response = await fetch(`get_user_data.php?phone=${userPhone}`);
-        const data = await response.json();
-        if (data.success) {
-          currentServerBalance = parseFloat(data.balance);
-          document.getElementById("balance").textContent = currentServerBalance.toFixed(2);
-        }
-      } catch (err) {
-        console.error("Failed to fetch balance:", err);
-      }
+    async function fetchBal() {
+      const res = await fetch(`${BASE_URL}get_user_data.php?phone=${userPhone}`);
+      const data = await res.json();
+      if(data.success) document.getElementById("balance").textContent = data.balance;
     }
 
     function toggleQR() {
       const type = document.getElementById("type").value;
-      document.getElementById("qr-box").style.display = (type === "Recharge") ? "block" : "none";
-      document.getElementById("amount").placeholder = (type === "Withdraw") ? "Min. 1000" : "Min. 300";
+      document.getElementById("qr-box").classList.toggle("hidden", type !== "Recharge");
     }
 
     async function submitRequest() {
-      const type = document.getElementById("type").value;
-      const amount = parseFloat(document.getElementById("amount").value);
-      const number = document.getElementById("number").value.trim();
-      const method = document.getElementById("method").value.trim();
+      const payload = {
+        phone: userPhone,
+        type: document.getElementById("type").value,
+        amount: document.getElementById("amount").value,
+        method: document.getElementById("method").value,
+        accountNumber: document.getElementById("number").value
+      };
+
+      const res = await fetch(`${BASE_URL}process_request.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      
+      const result = await res.json();
       const msgBox = document.getElementById("msgBox");
+      msgBox.classList.remove("hidden");
 
-      if (!amount || amount <= 0 || !number || !method) {
-        alert("⚠️ Please fill all fields correctly.");
-        return;
-      }
-
-      // Check Constraints
-      if (type === "Withdraw") {
-        if (amount < 1000) { alert("Min. Withdraw is Rs 1000"); return; }
-        if (amount > currentServerBalance) { alert("❌ Insufficient balance on server."); return; }
+      if(result.success) {
+        msgBox.innerHTML = "✅ Request Sent! Check your email to confirm.";
+        msgBox.className = "mt-4 p-4 rounded-lg text-center bg-green-100 text-green-700";
+        fetchBal();
       } else {
-        if (amount < 300) { alert("Min. Recharge is Rs 300"); return; }
-      }
-
-      // 2. Update Database via PHP
-      try {
-        const response = await fetch('process_request.php', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            phone: userPhone,
-            type: type,
-            amount: amount,
-            method: method,
-            accountNumber: number
-          })
-        });
-        const result = await response.json();
-
-        if (result.success) {
-          // Prepare Email after database success
-          const subject = `${type} Request - NPR ${amount}`;
-          const body = `--- NEW REQUEST ---%0D%0AType: ${type}%0D%0AMethod: ${method}%0D%0AAmount: Rs ${amount}%0D%0ANumber: ${number}%0D%0ADate: ${new Date().toLocaleString()}`;
-          const mailto = `mailto:${ADMIN_EMAIL}?subject=${encodeURIComponent(subject)}&body=${body}`;
-
-          msgBox.style.display = "block";
-          msgBox.style.color = "green";
-          msgBox.innerHTML = `✅ Request Logged on Server!<br><a href="${mailto}" class="email-btn">CONFIRM & SEND EMAIL</a>`;
-          
-          fetchBalance(); // Refresh the UI balance
-        } else {
-          alert("Error: " + result.message);
-        }
-      } catch (err) {
-        alert("Server connection failed. Please try again.");
+        msgBox.innerHTML = "❌ Error: " + result.message;
+        msgBox.className = "mt-4 p-4 rounded-lg text-center bg-red-100 text-red-700";
       }
     }
-
-    fetchBalance();
+    fetchBal();
   </script>
 </body>
 </html>
