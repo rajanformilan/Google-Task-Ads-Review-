@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Admin - Balance & Order Manager</title>
+  <title>Admin - Balance Manager</title>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <style>
     :root { --primary: #2c3e50; --success: #27ae60; --accent: #3498db; --danger: #e74c3c; }
@@ -11,174 +11,122 @@
     .container { max-width: 900px; margin: auto; }
     .card { background: white; border-radius: 12px; padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
     h2, h3 { color: var(--primary); border-bottom: 2px solid #eee; padding-bottom: 10px; }
-
-    /* Form Styling */
     input, button { width: 100%; padding: 12px; margin-top: 10px; border-radius: 8px; border: 1px solid #ddd; font-size: 1rem; box-sizing: border-box; }
     button { background: var(--accent); color: white; border: none; cursor: pointer; font-weight: bold; transition: opacity 0.2s; }
-    button:active { opacity: 0.8; }
+    .btn-quick { background: #8e44ad; margin-bottom: 10px; }
     .btn-logout { background: var(--danger); margin-top: 20px; }
-
-    /* History Table */
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
     th, td { text-align: left; padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
-    th { background: #f8f9fa; color: #7f8c8d; text-transform: uppercase; }
     .amt-plus { color: var(--success); font-weight: bold; }
     .amt-minus { color: var(--danger); font-weight: bold; }
-
     .status-badge { padding: 4px 8px; border-radius: 4px; font-size: 0.75rem; color: white; font-weight: bold; }
     .bg-add { background: var(--success); }
     .bg-deduct { background: var(--danger); }
-
-    .nav-btn { display: inline-block; padding: 10px 20px; background: #2563eb; color: white; text-decoration: none; border-radius: 8px; margin-bottom: 15px; font-weight: 600; }
   </style>
 </head>
 <body>
-
   <div class="container">
-    <a href="dashboard.html" class="nav-btn">Data Center - Check🛫</a>
-
     <h2><i class="fas fa-user-shield"></i> Admin Control Panel</h2>
+    
+    <div class="card">
+      <h3><i class="fas fa-bolt"></i> Quick Fix for +9779824235220</h3>
+      <input type="number" id="quickAmount" placeholder="Amount for 9824235220">
+      <button class="btn-quick" onclick="quickUpdate('+9779824235220')">Update This Specific User Now</button>
+    </div>
 
     <div class="card">
-      <h3><i class="fas fa-coins"></i> Add / Deduct Balance</h3>
-      <input type="text" id="targetMobile" placeholder="User Mobile Number (e.g. 98XXXXXXXX)">
-      <input type="number" id="targetAmount" placeholder="Amount (e.g. 500 to add, -200 to deduct)">
+      <h3><i class="fas fa-coins"></i> Standard Add / Deduct</h3>
+      <input type="text" id="targetMobile" placeholder="User Mobile Number">
+      <input type="number" id="targetAmount" placeholder="Amount">
       <button onclick="updateAndLogBalance()">Update Balance Now</button>
       <p id="statusMsg" style="text-align:center; font-weight:bold; margin-top:10px;"></p>
     </div>
 
     <div class="card">
       <h3><i class="fas fa-history"></i> Admin Transaction History</h3>
-      <div id="historyTableContainer" style="overflow-x: auto;">
-        <table>
-          <thead>
-            <tr>
-              <th>User / Mobile</th>
-              <th>Action</th>
-              <th>Amount</th>
-              <th>Date & Time</th>
-            </tr>
-          </thead>
-          <tbody id="adminLogBody">
-            <!-- Logs will appear here -->
-          </tbody>
-        </table>
-      </div>
-      <button onclick="clearLogs()" style="background:#bdc3c7; font-size:0.8rem; width:auto; margin-top:10px;">Clear History</button>
+      <table>
+        <thead>
+          <tr>
+            <th>User / Mobile</th>
+            <th>Action</th>
+            <th>Amount</th>
+            <th>Date & Time</th>
+          </tr>
+        </thead>
+        <tbody id="adminLogBody"></tbody>
+      </table>
     </div>
 
     <button class="btn-logout" onclick="logout()">Logout Admin</button>
   </div>
 
   <script>
-    // Security: Check if admin is logged in
-    if (localStorage.getItem("isAdmin") !== "true") { 
-      window.location.href = "admin-login.html"; 
-    }
+    if (localStorage.getItem("isAdmin") !== "true") { window.location.href = "admin-login.html"; }
 
-    /**
-     * Normalizes phone numbers by removing +977 and spaces 
-     * to ensure database matching works regardless of input format.
-     */
     function normalizeMobile(num) {
       return num.replace("+977", "").replace(/\s+/g, "").trim();
     }
 
+    // Special function just for your current priority
+    function quickUpdate(specificMobile) {
+      const amount = parseFloat(document.getElementById("quickAmount").value);
+      if(isNaN(amount)) return alert("Enter an amount!");
+      executeBalanceUpdate(specificMobile, amount);
+    }
+
     function updateAndLogBalance() {
       const rawMobile = document.getElementById("targetMobile").value.trim();
-      const mobile = normalizeMobile(rawMobile);
       const amount = parseFloat(document.getElementById("targetAmount").value);
-      const status = document.getElementById("statusMsg");
+      const mobile = normalizeMobile(rawMobile);
 
-      if(!mobile || isNaN(amount)) {
-        alert("Please enter both a valid Mobile number and Amount!");
-        return;
-      }
+      const users = JSON.parse(localStorage.getItem("users") || "{}");
+      let userKey = users[mobile] ? mobile : (users["+977" + mobile] ? "+977" + mobile : null);
 
-      // Load users database from LocalStorage
+      if(!userKey) return alert("यो मोबाइल नम्बर भएको युजर भेटिएन!");
+      executeBalanceUpdate(userKey, amount);
+    }
+
+    function executeBalanceUpdate(userKey, amount) {
       const users = JSON.parse(localStorage.getItem("users") || "{}");
       
-      // Verify user exists
-      if(!users[mobile]) {
-        alert("यो मोबाइल नम्बर भएको युजर भेटिएन! Make sure the number matches the registration format.");
-        return;
+      // Ensure user exists in database before updating
+      if(!users[userKey]) {
+          // If the key strictly doesn't exist, we create a placeholder so the balance can be added
+          users[userKey] = { name: "User " + userKey, balance: 0 };
       }
 
-      // 1. UPDATE USER BALANCE
-      // Ensure the user has a balance property, default to 0
-      let currentBal = parseFloat(users[mobile].balance) || 0;
-      let newBal = currentBal + amount;
-      
-      // Update the user object
-      users[mobile].balance = newBal;
-      
-      // Save updated users list back to storage
+      users[userKey].balance = (parseFloat(users[userKey].balance) || 0) + amount;
       localStorage.setItem("users", JSON.stringify(users));
 
-      // 2. CREATE TRANSACTION LOG
       const adminLogs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-      const newLog = {
-        name: users[mobile].name || "Unknown",
-        mobile: mobile,
+      adminLogs.push({
+        name: users[userKey].name,
+        mobile: userKey,
         type: amount > 0 ? "ADDED" : "DEDUCTED",
         amount: Math.abs(amount),
         time: new Date().toLocaleString()
-      };
-      adminLogs.push(newLog);
+      });
       localStorage.setItem("adminLogs", JSON.stringify(adminLogs));
 
-      // 3. UI UPDATES
-      status.style.color = "green";
-      status.textContent = `✅ Success! Rs. ${Math.abs(amount)} ${newLog.type} to ${users[mobile].name}`;
-
-      // Reset inputs
-      document.getElementById("targetMobile").value = "";
-      document.getElementById("targetAmount").value = "";
-
-      // Refresh table
-      loadAdminLogs(); 
+      document.getElementById("statusMsg").textContent = `✅ Updated ${userKey}`;
+      loadAdminLogs();
     }
 
     function loadAdminLogs() {
       const logBody = document.getElementById("adminLogBody");
       const logs = JSON.parse(localStorage.getItem("adminLogs") || "[]");
-
-      if(logs.length === 0) {
-        logBody.innerHTML = "<tr><td colspan='4' style='text-align:center;'>No history found.</td></tr>";
-        return;
-      }
-
-      logBody.innerHTML = "";
-      // Display logs with the most recent at the top
-      [...logs].reverse().forEach(log => {
-        const typeClass = log.type === "ADDED" ? "bg-add" : "bg-deduct";
-        const amtClass = log.type === "ADDED" ? "amt-plus" : "amt-minus";
-        const symbol = log.type === "ADDED" ? "+" : "-";
-
-        logBody.innerHTML += `
-          <tr>
-            <td><strong>${log.name}</strong><br><small>${log.mobile}</small></td>
-            <td><span class="status-badge ${typeClass}">${log.type}</span></td>
-            <td class="${amtClass}">${symbol} Rs. ${log.amount}</td>
-            <td>${log.time}</td>
-          </tr>
-        `;
-      });
+      logBody.innerHTML = logs.reverse().map(log => `
+        <tr>
+          <td><strong>${log.name}</strong><br><small>${log.mobile}</small></td>
+          <td><span class="status-badge ${log.type === 'ADDED' ? 'bg-add' : 'bg-deduct'}">${log.type}</span></td>
+          <td class="${log.type === 'ADDED' ? 'amt-plus' : 'amt-minus'}">Rs. ${log.amount}</td>
+          <td>${log.time}</td>
+        </tr>
+      `).join('');
     }
 
-    function clearLogs() {
-      if(confirm("Are you sure you want to delete all transaction history?")) {
-        localStorage.setItem("adminLogs", "[]");
-        loadAdminLogs();
-      }
-    }
+    function logout() { localStorage.removeItem("isAdmin"); window.location.href = "admin-login.html"; }
 
-    function logout() {
-      localStorage.removeItem("isAdmin");
-      window.location.href = "admin-login.html";
-    }
-
-    // Initialize the history table on page load
     loadAdminLogs();
   </script>
 </body>
