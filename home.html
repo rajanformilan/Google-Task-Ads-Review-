@@ -1,368 +1,263 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Review4Pay - Earn Daily</title>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
-  <style>
-    :root {
-      --primary: #2c3e50;
-      --success: #27ae60;
-      --vip: #8e44ad;
-      --accent: #3498db;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Review4Pay Nepal - Premium Dashboard</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; --bg: #f8fafc; --danger: #ef4444; --vip: #fbbf24; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: var(--bg); margin: 0; color: #1e293b; overflow-x: hidden; padding-bottom: 20px; }
+        
+        .header { 
+            background: var(--primary); color: white; padding: 1rem 1.5rem; 
+            display: flex; justify-content: space-between; align-items: center; 
+            position: sticky; top: 0; z-index: 1000; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); 
+        }
+        .logo { font-size: 1.25rem; font-weight: 800; letter-spacing: -0.025em; display: flex; align-items: center; gap: 8px; }
+        .burger-btn { font-size: 1.5rem; color: white; cursor: pointer; background: transparent; border: none; padding: 5px; }
 
-    body {
-      font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-      margin: 0;
-      background: #f0f2f5;
-      color: #333;
-    }
+        .user-banner {
+            background: white; padding: 1.25rem 1.5rem; border-bottom: 1px solid #e2e8f0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .user-info { display: flex; align-items: center; gap: 12px; }
+        .user-avatar { width: 45px; height: 45px; background: #e2e8f0; border-radius: 50%; display: grid; place-items: center; font-size: 1.2rem; color: #64748b; border: 2px solid #f1f5f9; }
+        .user-details .name { font-weight: 800; font-size: 1rem; color: var(--primary); display: block; }
+        
+        .plan-badge { font-size: 0.65rem; font-weight: 800; padding: 2px 8px; border-radius: 5px; text-transform: uppercase; display: inline-block; margin-top: 4px; }
+        .plan-free { background: #f1f5f9; color: #64748b; border: 1px solid #cbd5e1; }
+        .plan-premium { background: #fef3c7; color: #92400e; border: 1px solid var(--vip); }
 
-    /* Navbar */
-    .navbar {
-      background: var(--primary);
-      color: white;
-      padding: 12px 20px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      position: sticky;
-      top: 0;
-      z-index: 1000;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.2);
-    }
+        .sidebar {
+            position: fixed; top: 0; right: -280px; width: 280px; height: 100%;
+            background: white; z-index: 2000; transition: 0.3s ease-in-out;
+            box-shadow: -10px 0 15px rgba(0,0,0,0.1);
+        }
+        .sidebar.active { right: 0; }
+        .sidebar-header { background: var(--primary); color: white; padding: 20px; font-weight: 800; display: flex; justify-content: space-between; }
+        .sidebar-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1900; display: none; }
+        .sidebar-overlay.active { display: block; }
+        .nav-links { list-style: none; padding: 0; margin: 0; }
+        .nav-links a { display: flex; align-items: center; gap: 1rem; padding: 1.25rem 1.5rem; text-decoration: none; color: #334155; font-weight: 600; border-bottom: 1px solid #f1f5f9; }
+        .nav-links a i { width: 20px; color: var(--accent); }
 
-    .logo {
-      font-size: 1.3rem;
-      font-weight: bold;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
+        .dashboard-stats { padding: 1.25rem; display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; max-width: 600px; margin: 0 auto; }
+        .stat-card { background: white; border: 1px solid #e2e8f0; padding: 1rem; border-radius: 1rem; text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); }
+        .stat-val { display: block; font-size: 1.15rem; font-weight: 800; color: var(--success); }
+        .stat-lbl { font-size: 0.7rem; font-weight: 700; color: #64748b; text-transform: uppercase; margin-top: 4px; }
 
-    .nav-links {
-      list-style: none;
-      display: flex;
-      gap: 15px;
-      margin: 0;
-    }
+        .vip-promo-container { max-width: 600px; margin: 0 auto; padding: 0 1rem; }
+        .vip-banner {
+            background: linear-gradient(135deg, #f59e0b, #ea580c);
+            border-radius: 1rem; padding: 1.25rem; color: white;
+            display: flex; justify-content: space-between; align-items: center;
+            box-shadow: 0 10px 15px -3px rgba(234, 88, 12, 0.3);
+            cursor: pointer; transition: transform 0.2s;
+        }
+        .vip-content h3 { margin: 0; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; font-weight: 900; }
+        .vip-content p { margin: 5px 0 0; font-size: 0.8rem; opacity: 0.9; font-weight: 600; }
+        .vip-price-tag { background: white; color: #ea580c; padding: 8px 12px; border-radius: 0.75rem; text-align: center; min-width: 70px; }
+        .vip-price-tag .price { font-size: 1.2rem; font-weight: 900; }
 
-    .nav-links a {
-      color: white;
-      text-decoration: none;
-      font-size: 0.9rem;
-      opacity: 0.9;
-    }
-
-    /* Stats Dashboard */
-    .dashboard {
-      max-width: 1000px;
-      margin: 20px auto;
-      padding: 0 15px;
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 15px;
-    }
-
-    .stat-card {
-      background: white;
-      padding: 20px;
-      border-radius: 12px;
-      text-align: center;
-      box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-    }
-
-    .stat-card i { font-size: 1.5rem; color: var(--accent); margin-bottom: 10px; }
-    .stat-label { display: block; font-size: 0.8rem; color: #7f8c8d; text-transform: uppercase; }
-    .stat-value { font-size: 1.2rem; font-weight: bold; display: block; margin-top: 5px; }
-
-    .status-badge {
-      background: #95a5a6;
-      color: white;
-      padding: 2px 8px;
-      border-radius: 20px;
-      font-size: 0.7rem;
-      vertical-align: middle;
-    }
-
-    /* Hotel List */
-    .hotel-container {
-      max-width: 1100px;
-      margin: 20px auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-      gap: 20px;
-      padding: 15px;
-    }
-
-    .hotel-card {
-      background: white;
-      border-radius: 15px;
-      overflow: hidden;
-      box-shadow: 0 6px 12px rgba(0,0,0,0.08);
-      position: relative;
-    }
-
-    .hotel-card img {
-      width: 100%;
-      height: 180px;
-      object-fit: cover;
-    }
-
-    .reward-pill {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: var(--success);
-      color: white;
-      padding: 5px 10px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      font-weight: bold;
-    }
-
-    .hotel-info { padding: 15px; text-align: center; }
-    .hotel-info h3 { margin: 0 0 10px; font-size: 1.1rem; }
-
-    .btn-earn {
-      background: var(--accent);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: bold;
-      width: 100%;
-    }
-
-    /* Modal */
-    #review-modal {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.7);
-      justify-content: center;
-      align-items: center;
-      z-index: 2000;
-      padding: 20px;
-    }
-
-    .modal-box {
-      background: white;
-      padding: 25px;
-      border-radius: 15px;
-      width: 100%;
-      max-width: 400px;
-    }
-
-    .modal-box h2 { margin-top: 0; font-size: 1.3rem; }
-    .modal-box textarea {
-      width: 100%;
-      margin: 15px 0;
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      resize: none;
-      box-sizing: border-box;
-    }
-
-    .btn-submit { background: var(--success); color: white; border: none; padding: 12px; width: 100%; border-radius: 8px; cursor: pointer; font-weight: bold; }
-    .btn-close { background: #eee; border: none; padding: 8px; margin-top: 10px; width: 100%; border-radius: 8px; cursor: pointer; }
-
-    /* Responsive Burger */
-    .burger { display: none; cursor: pointer; color: white; font-size: 1.5rem; }
-
-    @media (max-width: 600px) {
-      .burger { display: block; }
-      .nav-links { display: none; position: absolute; top: 55px; right: 20px; background: var(--primary); padding: 15px; border-radius: 8px; flex-direction: column; }
-      .nav-links.active { display: flex; }
-    }
-  </style>
+        .section-title { text-align: center; margin: 1.5rem 0 1rem; font-size: 0.9rem; font-weight: 800; color: #64748b; text-transform: uppercase; }
+        .feed { max-width: 600px; margin: 0 auto; padding: 0 1rem 50px; }
+        .task-card { background: white; border-radius: 1.25rem; padding: 1.25rem; margin-bottom: 1rem; border: 1px solid #e2e8f0; animation: slideUp 0.5s ease-out; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .user-info-row { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+        .pfp { width: 40px; height: 40px; border-radius: 50%; border: 1px solid #e2e8f0; }
+        .reviewer-name { font-weight: 700; font-size: 0.9rem; }
+        .v-badge { background: #dcfce7; color: #166534; font-size: 0.6rem; padding: 2px 6px; border-radius: 10px; margin-left: 5px; }
+        .location-image { width: 100%; height: 160px; border-radius: 0.75rem; object-fit: cover; margin: 10px 0; }
+        .loc-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+        .price-tag { font-weight: 800; color: var(--success); font-size: 1rem; }
+        .btn-claim { background: var(--accent); color: white; border: none; padding: 0.7rem 1.2rem; border-radius: 0.75rem; font-weight: 700; cursor: pointer; }
+        .btn-claim:disabled { background: #cbd5e1; color: #64748b; cursor: not-allowed; }
+    </style>
 </head>
 <body>
 
-  <nav class="navbar">
-    <div class="logo"><i class="fas fa-coins"></i> Review4Pay</div>
-    <div class="burger" id="burger"><i class="fas fa-bars"></i></div>
-    <ul class="nav-links" id="nav-links">
-      <li><a href="home.html">Home</a></li>
-      <li><a href="submit.html">Submit</a></li>
-      <li><a href="admin-login.html">Admin</a></li>
-      <li><a href="history.html">History</a></li>
-      <li><a href="index.html" onclick="logout()">Logout</a></li>
+<div class="sidebar-overlay" id="overlay" onclick="toggleMenu()"></div>
+<nav class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+        <span>MENU</span>
+        <i class="fas fa-times" onclick="toggleMenu()" style="cursor:pointer"></i>
+    </div>
+    <ul class="nav-links">
+        <li><a href="home.html"><i class="fas fa-home"></i> Home</a></li>
+        <li><a href="submit.html"><i class="fas fa-plus-circle"></i> Deposit & Withdraw</a></li>
+        <li><a href="admin.html"><i class="fas fa-user-shield"></i> Admin Panel</a></li>
+        <li><a href="history.html"><i class="fas fa-history"></i> Task History</a></li>
+        <li><a href="profile.html"><i class="fas fa-user-circle"></i> Profile</a></li>
+        <li><a href="index.html" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i> Logout</a></li>
     </ul>
-  </nav>
+</nav>
 
-  <div class="dashboard">
-    <div class="stats-grid">
-      <div class="stat-card">
-        <i class="fas fa-user-circle"></i>
-        <span class="stat-label">Member Name</span>
-        <span class="stat-value"><span id="user-name">Guest</span> <span id="tier-badge" class="status-badge">Free</span></span>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-wallet"></i>
-        <span class="stat-label">Balance</span>
-        <span class="stat-value" style="color:var(--success)">Rs. <span id="balance-val">0</span></span>
-      </div>
-      <div class="stat-card">
-        <i class="fas fa-tasks"></i>
-        <span class="stat-label">Today's Tasks</span>
-        <span class="stat-value"><span id="done-count">0</span> / <span id="limit-count">10</span></span>
-      </div>
-    </div>
-  </div>
+<header class="header">
+    <div class="logo"><i class="fas fa-bolt"></i> REVIEW4PAY</div>
+    <button class="burger-btn" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+</header>
 
-  <div class="hotel-container" id="hotel-list"></div>
-
-  <div id="review-modal">
-    <div class="modal-box">
-      <h2 id="m-hotel-name">Hotel Name</h2>
-      <p style="font-size: 0.8rem; color: #666;">Step: Confirm 5-star rating & submit review.</p>
-
-      <div style="color: #f1c40f; margin-bottom: 10px;">
-        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
-      </div>
-
-      <input type="text" id="m-user-name" readonly style="background:#f9f9f9; width:100%; border:1px solid #ddd; padding:8px; border-radius:5px; box-sizing:border-box;">
-      <textarea id="review-text" rows="3" placeholder="Write a nice comment about the hotel..."></textarea>
-
-      <button class="btn-submit" id="submit-btn">Submit & Get Paid</button>
-      <button class="btn-close" onclick="closeModal()">Cancel</button>
-    </div>
-  </div>
-
-  <script>
-  // --- DATA LOAD ---
-  const loggedInPhone = localStorage.getItem("loggedInUser");
-  const allUsers = JSON.parse(localStorage.getItem("users") || "{}");
-  const userData = allUsers[loggedInPhone] || { name: "Guest User", isSubscribed: false };
-
-  // Rules Logic
-  const IS_VIP = userData.isSubscribed === true;
-  const TASK_LIMIT = IS_VIP ? 14 : 10;
-  const REWARD = IS_VIP ? 70 : 65;
-  const FEE = 50;
-
-  // --- FIXED BALANCE LOGIC ---
-  // यहाँ check गरिन्छ कि balance पहिल्यै छ कि छैन। यदि छैन (null) भने मात्र १०० राखिन्छ।
-  let storedBalance = localStorage.getItem("balance");
-  let balance = (storedBalance === null) ? 100 : parseInt(storedBalance);
-
-  let taskDone = parseInt(localStorage.getItem("reviewsToday")) || 0;
-  let history = JSON.parse(localStorage.getItem("reviewedHotels") || "[]");
-
-  // --- UI SETUP ---
-  function initUI() {
-    document.getElementById("user-name").textContent = userData.name;
-    document.getElementById("m-user-name").value = userData.name;
-    document.getElementById("balance-val").textContent = balance;
-    document.getElementById("done-count").textContent = taskDone;
-    document.getElementById("limit-count").textContent = TASK_LIMIT;
-
-    if(IS_VIP) {
-      const badge = document.getElementById("tier-badge");
-      badge.textContent = "VIP";
-      badge.style.background = "#8e44ad";
-    }
-  }
-
-  const relatableHotels = [
-    { n: "Annapurna Luxury Resort", img: "https://images.unsplash.com/photo-1549893072-4bc678117f45?auto=format&fit=crop&w=500" },
-    { n: "Kathmandu Guest House", img: "https://images.unsplash.com/photo-1582650625119-3a31f8fa2699?auto=format&fit=crop&w=500" },
-    { n: "Pokhara Lakeside Inn", img: "https://images.unsplash.com/photo-1540541338287-41700207eda5?auto=format&fit=crop&w=500" },
-    { n: "Everest Summit Lodge", img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=500" },
-    { n: "Chitwan Riverside Villa", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=500" },
-    { n: "Nagarkot Panorama", img: "https://images.unsplash.com/photo-1445019980597-93fa8acb246c?auto=format&fit=crop&w=500" }
-  ];
-
-  function renderHotels() {
-    const list = document.getElementById("hotel-list");
-    list.innerHTML = ""; 
-    for (let i = 0; i < 40; i++) {
-      const data = relatableHotels[i % relatableHotels.length];
-      const hName = `${data.n} #${i + 101}`;
-      const card = document.createElement("div");
-      card.className = "hotel-card";
-      card.innerHTML = `
-        <div class="reward-pill">Rs. ${REWARD}</div>
-        <img src="${data.img}&sig=${i}" alt="hotel">
-        <div class="hotel-info">
-          <h3>${hName}</h3>
-          <button class="btn-earn" onclick="openReview('${hName}')">Start Task</button>
+<div class="user-banner">
+    <div class="user-info">
+        <div class="user-avatar"><i class="fas fa-user"></i></div>
+        <div class="user-details">
+            <span class="name" id="display-user-name">Loading...</span>
+            <span id="display-plan-badge" class="plan-badge">Free Plan</span>
         </div>
-      `;
-      list.appendChild(card);
+    </div>
+    <div style="text-align: right">
+        <div style="font-size: 0.55rem; color: #94a3b8; font-weight: 800; text-transform: uppercase;">System Status</div>
+        <div style="font-size: 0.7rem; color: var(--success); font-weight: 800;"><i class="fas fa-circle" style="font-size: 0.4rem"></i> SECURE</div>
+    </div>
+</div>
+
+<div class="dashboard-stats">
+    <div class="stat-card">
+        <span class="stat-val" id="balance-display">NRs. 0.00</span>
+        <span class="stat-lbl">Wallet Balance</span>
+    </div>
+    <div class="stat-card">
+        <span class="stat-val" id="count-display" style="color:var(--accent)">0</span>
+        <span class="stat-lbl">Tasks Done</span>
+    </div>
+</div>
+
+<div class="vip-promo-container" id="vip-promo-section">
+    <div class="vip-banner" onclick="window.location.href='submit.html'">
+        <div class="vip-content">
+            <h3><i class="fas fa-crown"></i> 1-DAY VIP GOLD</h3>
+            <p>Earn Rs. 70 Profit per task (24hr Validity)</p>
+        </div>
+        <div class="vip-price-tag">
+            <span class="label" style="font-size: 0.6rem; font-weight: 800;">Price</span>
+            <span class="price">300</span>
+        </div>
+    </div>
+</div>
+
+<div class="section-title">Verified Nepal Tasks</div>
+<div id="feed" class="feed"></div>
+
+<script>
+    // --- Data Management ---
+    let userName = localStorage.getItem("userName") || "Guest User";
+    let userType = localStorage.getItem("userLevel") || "free"; 
+    
+    // Reward settings update: Free 65, Premium 70
+    const REWARD_FREE = 65;
+    const REWARD_PREMIUM = 70;
+    
+    let storedBalance = localStorage.getItem("userBalance");
+    let balance = (storedBalance === null) ? 100.00 : parseFloat(storedBalance);
+    
+    if(storedBalance === null) {
+        localStorage.setItem("userBalance", balance);
     }
-  }
 
-  // --- LOGIC ---
-  let activeHotel = "";
+    let tasksDone = parseInt(localStorage.getItem("tasksDoneToday")) || 0;
+    let claimedTasks = JSON.parse(localStorage.getItem("claimedTaskNames")) || [];
 
-  function openReview(name) {
-    activeHotel = name;
-    document.getElementById("m-hotel-name").textContent = name;
-    document.getElementById("review-modal").style.display = "flex";
-  }
-
-  function closeModal() {
-    document.getElementById("review-modal").style.display = "none";
-    document.getElementById("review-text").value = "";
-  }
-
-  document.getElementById("submit-btn").addEventListener("click", () => {
-    const txt = document.getElementById("review-text").value.trim();
-
-    if(txt.length < 10) {
-      alert("Please write a proper review (min 10 characters).");
-      return;
-    }
-    if(history.includes(activeHotel)) {
-      alert("You already completed this task today.");
-      return;
-    }
-    if(taskDone >= TASK_LIMIT) {
-      alert(`Limit reached! Upgrade to VIP for more tasks.`);
-      return;
-    }
-    if(balance < FEE) {
-      alert("Insufficient balance to cover security fee (Rs. 50).");
-      return;
+    function checkVipExpiry() {
+        let vipStartTime = localStorage.getItem("vipStartTime");
+        if (userType === "premium" && vipStartTime) {
+            let currentTime = new Date().getTime();
+            let twentyFourHours = 24 * 60 * 60 * 1000;
+            if (currentTime - vipStartTime > twentyFourHours) {
+                userType = "free";
+                localStorage.setItem("userLevel", "free");
+                localStorage.removeItem("vipStartTime");
+                alert("Your VIP Plan has expired.");
+                location.reload();
+            }
+        }
     }
 
-    // Calculation
-    balance = (balance - FEE) + REWARD;
-    taskDone++;
-    history.push(activeHotel);
+    const places = [
+        { name: "Kathmandu Marriott Hotel", img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?w=600", reviewer: "Anjali Rai" },
+        { name: "The Dwarika's Hotel", img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?w=600", reviewer: "Binod Shrestha" },
+        { name: "Roadhouse Cafe Thamel", img: "https://images.unsplash.com/photo-1555396273-367ea4eb4db5?w=600", reviewer: "Pratima Gurung" },
+        { name: "Patan Durbar Square", img: "https://images.unsplash.com/photo-1605640840605-14ac1855827b?w=600", reviewer: "Roshan Karki" }
+    ];
 
-    // Save
-    localStorage.setItem("balance", balance);
-    localStorage.setItem("reviewsToday", taskDone);
-    localStorage.setItem("reviewedHotels", JSON.stringify(history));
+    function toggleMenu() {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('overlay').classList.toggle('active');
+    }
 
-    initUI();
-    alert(`Success! Reward of Rs. ${REWARD} added.`);
-    closeModal();
-  });
+    function initUserUI() {
+        checkVipExpiry();
+        document.getElementById('display-user-name').innerText = userName;
+        const badge = document.getElementById('display-plan-badge');
+        const promoSection = document.getElementById('vip-promo-section');
+        if(userType === "premium") {
+            badge.innerText = "VIP Gold Plan";
+            badge.className = "plan-badge plan-premium";
+            promoSection.style.display = "none";
+        } else {
+            badge.innerText = "Free Plan";
+            badge.className = "plan-badge plan-free";
+            promoSection.style.display = "block";
+        }
+        document.getElementById('balance-display').innerText = `NRs. ${balance.toFixed(2)}`;
+        document.getElementById('count-display').innerText = tasksDone;
+    }
 
-  function logout() {
-    localStorage.removeItem("loggedInUser");
-    window.location.href = "login.html";
-  }
+    function generateFeed() {
+        const feed = document.getElementById('feed');
+        const reward = (userType === "premium") ? REWARD_PREMIUM : REWARD_FREE;
+        feed.innerHTML = '';
+        for (let i = 0; i < 20; i++) {
+            const p = places[i % places.length];
+            const isClaimed = claimedTasks.includes(p.name + i);
+            const btnLabel = isClaimed ? "Claimed" : "Claim Task";
+            const btnDisabled = isClaimed ? "disabled" : "";
+            feed.innerHTML += `
+                <div class="task-card">
+                    <div class="user-info-row">
+                        <img src="https://i.pravatar.cc/100?u=${i}" class="pfp">
+                        <div>
+                            <div class="reviewer-name">${p.reviewer} <span class="v-badge">Verified</span></div>
+                            <div style="color:#fbbf24; font-size:0.7rem;"><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i></div>
+                        </div>
+                    </div>
+                    <div style="font-size:0.85rem; color:#475569; font-style:italic">"Best experience in Nepal so far!"</div>
+                    <div style="font-weight:800; font-size:0.85rem; margin-top:10px;"><i class="fas fa-map-marker-alt" style="color:red"></i> ${p.name}</div>
+                    <img src="${p.img}" class="location-image">
+                    <div class="loc-footer">
+                        <div class="price-tag">Earn: NRs. ${reward}</div>
+                        <button class="btn-claim" ${btnDisabled} onclick="handleClaim('${p.name}', ${i})">${btnLabel}</button>
+                    </div>
+                </div>
+            `;
+        }
+    }
 
-  document.getElementById("burger").onclick = () => {
-    document.getElementById("nav-links").classList.toggle("active");
-  };
+    function handleClaim(placeName, index) {
+        const reward = (userType === "premium") ? REWARD_PREMIUM : REWARD_FREE;
+        if (confirm(`Claim task for ${placeName} to earn NRs. ${reward}?`)) {
+            balance += reward;
+            tasksDone++;
+            claimedTasks.push(placeName + index);
+            localStorage.setItem("claimedTaskNames", JSON.stringify(claimedTasks));
+            localStorage.setItem("userBalance", balance);
+            localStorage.setItem("tasksDoneToday", tasksDone);
+            let history = JSON.parse(localStorage.getItem("taskHistory") || "[]");
+            history.unshift({ id: Date.now(), place: placeName, profit: reward, date: new Date().toLocaleDateString(), status: "Pending Approval" });
+            localStorage.setItem("taskHistory", JSON.stringify(history));
+            initUserUI();
+            generateFeed();
+            alert(`Success! NRs. ${reward} earned.`);
+            window.location.href = "write.html";
+        }
+    }
 
-  // Run initial functions
-  initUI();
-  renderHotels();
+    window.onload = () => {
+        initUserUI();
+        generateFeed();
+    };
 </script>
-
 </body>
 </html>
