@@ -76,8 +76,8 @@
     </style>
 </head>
 <body>
-
-<div class="sidebar-overlay" id="overlay" onclick="toggleMenu()"></div>
+<a class="logo-area">
+        <div class="sidebar-overlay" id="overlay" onclick="toggleMenu()"></div>
 <nav class="sidebar" id="sidebar">
     <div class="sidebar-header">
         <span>MENU</span>
@@ -94,7 +94,10 @@
 </nav>
 
 <header class="header">
-    <div class="logo"><i class="fas fa-bolt"></i> REVIEW4PAY</div>
+    <a class="logo-area">
+        <div class="logo-icon"><i class="fas fa-star"></i></div>
+        <div class="logo-text">REVIEW<span style="color:var(--accent)">4</span>PAY</div>
+    </a>
     <button class="burger-btn" onclick="toggleMenu()">
         <i class="fas fa-bars"></i>
     </button>
