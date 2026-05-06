@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Submit Proof - Review4Pay</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root { --primary: #0f172a; --accent: #2563eb; --success: #16a34a; --bg: #f8fafc; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; color: #1e293b; }
+        
+        .header { background: var(--primary); color: white; padding: 1rem; display: flex; align-items: center; gap: 1rem; }
+        .back-btn { color: white; text-decoration: none; font-size: 1.2rem; }
+
+        .container { max-width: 500px; margin: 1.5rem auto; padding: 0 1rem; }
+        
+        /* Task Details Card */
+        .task-summary { background: white; border-radius: 1rem; padding: 1.5rem; border: 1px solid #e2e8f0; margin-bottom: 1.5rem; }
+        .task-summary h2 { margin: 0 0 0.5rem 0; font-size: 1.1rem; }
+        .reward-tag { color: var(--success); font-weight: 800; font-size: 1.2rem; }
+
+        /* Upload Area */
+        .upload-box { 
+            border: 2px dashed #cbd5e1; border-radius: 1rem; padding: 2rem; 
+            text-align: center; background: #fff; cursor: pointer; transition: 0.3s;
+        }
+        .upload-box:hover { border-color: var(--accent); background: #eff6ff; }
+        .upload-box i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 1rem; }
+        
+        #preview { width: 100%; border-radius: 0.5rem; margin-top: 1rem; display: none; }
+
+        .instructions { font-size: 0.85rem; color: #64748b; margin-top: 1.5rem; line-height: 1.6; }
+        .instructions ul { padding-left: 1.2rem; }
+
+        .btn-submit { 
+            width: 100%; background: var(--accent); color: white; border: none; 
+            padding: 1rem; border-radius: 0.75rem; font-weight: 700; font-size: 1rem; 
+            margin-top: 2rem; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.3);
+        }
+    </style>
+</head>
+<body>
+
+<header class="header">
+    <a href="#" class="back-btn"><i class="fas fa-arrow-left"></i></a>
+    <div style="font-weight: 700;">Submit Task Proof</div>
+</header>
+
+<div class="container">
+    <div class="task-summary">
+        <p style="font-size: 0.8rem; color: #64748b; margin: 0;">Currently Submitting for:</p>
+        <h2>Hotel</h2>
+        <div class="reward-tag">Rs. 15.00, 20.00 Reward</div>
+    </div>
+
+    <div class="upload-box" onclick="document.getElementById('fileInput').click()">
+        <i class="fas fa-cloud-upload-alt"></i>
+        <div style="font-weight: 600;">Upload Screenshot</div>
+        <p style="font-size: 0.8rem; color: #64748b;">PNG, JPG or JPEG (Max 5MB)</p>
+        <input type="file" id="fileInput" hidden accept="image/*" onchange="showPreview(event)">
+        <img id="preview" alt="Proof Preview">
+    </div>
+
+    <div class="instructions">
+        <strong>Submission Rules:</strong>
+        <ul>
+            <li>Screenshot must show your public review.</li>
+            <li>Google Maps name must match your profile.</li>
+            <li>Submission is reviewed within 2 minutes.</li>
+        </ul>
+    </div>
+
+    <button class="btn-submit" onclick="handleSubmit()">Submit for Verification</button>
+</div>
+
+<script>
+    function showPreview(event) {
+        const file = event.target.files[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('preview');
+                preview.src = e.target.result;
+                preview.style.display = 'block';
+            }
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function handleSubmit() {
+        const fileInput = document.getElementById('fileInput');
+        if (!fileInput.files[0]) {
+            alert("Please upload a screenshot of your review first!");
+            return;
+        }
+        alert("Success! Your review has been submitted for verification. Reward will be added to your wallet soon.");
+        window.location.href = "home.html"; // Redirect back to dashboard
+    }
+</script>
+
+</body>
+</html>
